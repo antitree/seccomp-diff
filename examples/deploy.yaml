@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: seccomp-inspector
+  name: seccomp-diff
   labels:
-    app: seccomp-inspector
+    app: seccomp-diff
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: seccomp-inspector
+      app: seccomp-diff
   template:
     metadata:
       labels:
-        app: seccomp-inspector
+        app: seccomp-diff
     spec:
       hostPID: true
       containers:

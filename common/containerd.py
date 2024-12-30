@@ -49,7 +49,7 @@ def get_container_pid(containerd_socket, container_id, namespace="k8s.io"):
         print(f"Error accessing spec for container {container_id}: {e}")
         return None
 
-def get_containerd_pids(containerd_socket="/run/containerd/containerd.sock", namespace="k8s.io", with_seccomp=False):
+def get_containers(containerd_socket="/run/containerd/containerd.sock", namespace="k8s.io", with_seccomp=False):
     container_info = {}
 
     # Connect to the containerd gRPC socket
@@ -71,6 +71,7 @@ def get_containerd_pids(containerd_socket="/run/containerd/containerd.sock", nam
             image = None
             
             labels = None
+            # TODO Fix this to make it more accurate
             # try: 
             #     #labels = container.labels
             #     # if labels and "io.kubernetes.container.name" in labels:
@@ -125,7 +126,7 @@ def main():
             print(f"  - {ns}")
         return
 
-    container_info = get_containerd_pids(
+    container_info = get_containers(
         containerd_socket=args.containerd_socket,
         namespace=args.namespace,
         with_seccomp=args.with_seccomp

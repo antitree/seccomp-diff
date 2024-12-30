@@ -73,7 +73,7 @@ async function runSeccompDiff() {
 
         if (data.output) {
             const tableData = JSON.parse(data.output);
-            const { headers, rows } = tableData;
+            const { headers, rows, full } = tableData;
 
             // Create a table to display the JSON output
             const table = document.createElement('table');
@@ -81,9 +81,26 @@ async function runSeccompDiff() {
 
             // Add table headers
             const headerRow = document.createElement('tr');
-            headers.forEach(headerText => {
+            headers.forEach((headerText, index) => {
                 const th = document.createElement('th');
                 th.textContent = headerText;
+                
+                
+                //const fullContent = full && full[index] ? full[index] : null;
+                const formattedContent = [];
+                const col = index - 1
+                if (full[col] != null && Array.isArray(full[col])){
+                    formattedContent[col] = full[col].map(line => `<div>${line}</div>`).join('');
+                    th.style.cursor = "pointer";
+                    console.log(`Formatted content for ${headerText}:`, formattedContent[col]);
+                    th.onclick = () => {
+                        if (formattedContent[col]) {
+                            showModal(`<pre>${formattedContent[col]}</pre>`);
+                        } else {
+                            showModal("No content available for this header.");
+                        }
+                    };
+                }
                 headerRow.appendChild(th);
             });
             table.appendChild(headerRow);
@@ -179,6 +196,7 @@ async function showModal(content) {
         const modal = document.createElement('div');
         modal.className = "modal fade";
         modal.id = "syscallModal";
+        console.error(content)
         modal.innerHTML = `
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -246,4 +264,3 @@ async function updateConfig(key, value) {
         console.error('Error updating configuration:', error);
     }
 }
-

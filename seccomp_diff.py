@@ -1,5 +1,5 @@
-from common import list_docker_pids
-from common import list_containerd_pids
+import common.docker as docker
+import common.containerd as containerd
 from common.diff import compare_seccomp_policies
 from common.output import CustomTable as Table
 
@@ -71,13 +71,13 @@ def main():
         # check if it's docker or k8s environment
         if ENV == "Docker":
             #container_pids = list_docker_pids.get_container_pids()
-            containers = list_docker_pids.get_containers()
+            containers = docker.get_containers()
             
             # Sort containers by PID in descending order
             containers = dict(sorted(containers.items(), key=lambda item: item[1]["pid"], reverse=True))
                 
         elif ENV == "k8s":
-            containers = list_containerd_pids.get_containerd_pids()
+            containers = containerd.get_containers()
             
         for name, values in containers.items():
             table.add_custom_row(name, str(values["pid"]), values["seccomp"], str(values["caps"]))
@@ -90,7 +90,7 @@ def main():
             raise ValueError("Cannot compare a container to itself")
 
         # Compare seccomp policies
-        table = compare_seccomp_policies(containers[container1], containers[container2])
+        table, _, _ = compare_seccomp_policies(containers[container1], containers[container2])
         console.print(table)
 
     except ValueError as e:

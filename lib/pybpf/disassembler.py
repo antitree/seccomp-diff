@@ -460,7 +460,7 @@ class BPFDisassembler(BPFDecoder):
                 
                 if h in self.syscallSummary.keys():
                     self.syscallSummary[h]["count"] += 1
-                    self.syscallSummary[h]["action"] = f"{actiont} / {actionf}"
+                    self.syscallSummary[h]["action"] = f"{actiont}/{actionf}"
                 else: 
                     self.syscallSummary[h] = {"count": 1, "action": f"{actiont}/{actionf}"}
         

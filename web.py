@@ -1,6 +1,6 @@
 from common.diff import compare_seccomp_policies
 from common import containerd
-from common.docker import get_containers, get_container_caps, get_container_seccomp
+from common import docker
 from flask import Flask, render_template, render_template_string, request, jsonify, send_from_directory, abort
 
 import json
@@ -8,13 +8,13 @@ import markdown
 import os
 import re
 
-
 app = Flask(__name__,
             static_folder="web/static",
             template_folder="web/templates",
             )
-app.config["PROPAGATE_EXCEPTIONS"] = True
-app.config["MODE"] = "Docker"
+if app.debug: 
+    app.config["PROPAGATE_EXCEPTIONS"] = True
+app.config["MODE"] = "k8s"
 
 @app.route('/')
 def index():
@@ -23,7 +23,7 @@ def index():
 
 
 def list_docker():
-    container_pids = get_containers()
+    container_pids = docker.get_containers()
     containers = []
     for container, values in container_pids.items():
         containers.append(values)
@@ -32,7 +32,7 @@ def list_docker():
     
 
 def list_k8s():
-    container_pids = containerd.get_containerd_pids(namespace="k8s.io")
+    container_pids = containerd.get_containers(namespace="k8s.io")
     containers = []
     # TODO there's a better way to do this but I'm tired
     for container, values in container_pids.items():
@@ -53,15 +53,16 @@ def list_containers():
         app.logger.error(f"Error during listing containers: {e} ")
         return jsonify({"error": str(e)}), 500
 
-def table_to_json(table):
+def table_to_json(table, full1=None, full2=None):
     """
     Converts a rich Table object into a JSON-serializable dictionary.
     """
     headers = [column.header for column in table.columns]
     rows = [[cell.text for cell in row] for row in table._custom_rows]
-    app.logger.debug(f"Headers: {headers}")
-    app.logger.debug(f"Rows: {rows}")
-    return json.dumps({"headers": headers, "rows": rows})
+    #app.logger.debug(f"Headers: {headers}")
+    #app.logger.debug(f"Rows: {rows}")
+    app.logger.error(full1)
+    return json.dumps({"headers": headers, "rows": rows, "full": [full1, full2]})
 
 @app.route('/syscalls/<filename>.html')
 def render_markdown_as_html(filename):
@@ -128,7 +129,7 @@ def get_font(path):
 @app.route('/debug', methods=['GET'])
 def run_debug():
     if app.debug: 
-        return jsonify(str(containerd.get_containerd_pids(namespace="k8s.io")))
+        return jsonify(str(containerd.get_containers(namespace="k8s.io")))
     else:
         return jsonfiy("")
      
@@ -146,21 +147,22 @@ def update_config():
 def run_seccomp_diff():
     """Run the seccomp_diff function with selected container details."""
     container_selection = request.json.get('containers')
-    app.logger.debug(container_selection)
     if not container_selection or len(container_selection) != 2:
         return jsonify({"error": "Please select exactly two containers."}), 400
 
     try:
         container1, container2 = container_selection
-        app.logger.debug(f'Container1: {container1}')
-        app.logger.debug(f'Container2: {container2}')
+        # app.logger.debug(f'Container1: {container1}')
+        # app.logger.debug(f'Container2: {container2}')
 
+        
 
         # Generate the table using compare_seccomp_policies
-        table = compare_seccomp_policies(container1, container2)
-
+        table,full1,full2 = compare_seccomp_policies(container1, container2)
+        #app.logger.warning(full1)
+        
         # Convert the table to JSON
-        table_json = table_to_json(table)
+        table_json = table_to_json(table, full1, full2)
         return jsonify({"output": table_json})
     except ValueError as e:
         return jsonify({"diff error": str(e)}), 500
