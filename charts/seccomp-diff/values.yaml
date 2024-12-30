@@ -1,0 +1,39 @@
+image:
+  repository: seccomp-diff
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 5000
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 250m
+    memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+demos:
+      enabled: false
+      deployments:
+        - name: demo1
+          image: busybox:latest
+          seccompProfile: "demo-seccomp1.json"
+        - name: demo2
+          image: busybox:latest
+          seccompProfile: "demo-seccomp2.json"
+        - name: demo3
+          image: busybox:latest
+          seccompProfile: "demo-seccomp3.json"
+        - name: demo4
+          image: busybox:latest
+          seccompProfile: "demo-seccomp4.json"
+        - name: demo5
+          image: busybox:latest
+          seccompProfile: "demo-seccomp5.json"

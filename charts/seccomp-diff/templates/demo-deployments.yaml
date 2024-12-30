@@ -1,0 +1,35 @@
+    {{- if .Values.demos.enabled }}
+    {{- range .Values.demos.deployments }}
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: {{ .name }}
+      labels:
+        app: {{ .name }}
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: {{ .name }}
+      template:
+        metadata:
+          labels:
+            app: {{ .name }}
+        spec:
+          securityContext:
+            seccompProfile:
+              type: Localhost
+              localhostProfile: {{ .seccompProfile }}
+          containers:
+            - name: {{ .name }}
+              image: {{ .image }}
+              command: ["sh", "-c", "echo Running {{ .name }}"]
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+                requests:
+                  cpu: 50m
+                  memory: 32Mi
+    {{- end }}
+    {{- end }}

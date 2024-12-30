@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seccomp-diff
+  labels:
+    app: seccomp-diff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seccomp-diff
+  template:
+    metadata:
+      labels:
+        app: seccomp-diff
+    spec:
+      hostPID: true
+      containers:
+      - name: seccomp-diff
+        resources:
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          privileged: true  # Allow ptrace and host-level access
+          capabilities:
+            add:
+            - SYS_PTRACE  # Add ptrace capability
+        volumeMounts:
+        - name: host-proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: docker-socket
+          mountPath: /var/run/docker.sock  # Mount Docker socket
+        - name: containerd-socket
+          mountPath: /var/run/containerd/containerd.sock  
+        env:
+        - name: PROC_PATH
+          value: "/host/proc"
+        command: ["flask"]
+        args: ["run", "--debug"]
+      volumes:
+      - name: host-proc
+        hostPath:
+          path: /proc
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock  # Host path for Docker socket
+      - name: containerd-socket
+        hostPath:
+          path: /var/run/containerd/containerd.sock  # Host path for Docker socket

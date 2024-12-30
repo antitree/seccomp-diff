@@ -1,0 +1,15 @@
+# Use a base image with Ruby pre-installed
+FROM ruby:latest
+
+# Set working directory
+WORKDIR /app
+
+# Install the seccomp-tools gem
+RUN gem install seccomp-tools
+
+# Verify installation
+RUN seccomp-tools --version
+
+# Set the default command
+CMD ["irb"]
+
