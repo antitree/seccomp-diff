@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seccomptools
+  labels:
+    app: seccomptools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seccomptools
+  template:
+    metadata:
+      labels:
+        app: seccomptools
+    spec:
+      hostPID: true
+      containers:
+      - name: seccomptools
+        image: antitree/seccomptools:latest
+        securityContext:
+          privileged: true  # Grant full root privileges
+          runAsUser: 0       # Run the container as root
+        command: ["tail"]
+        args: ["-f", "/dev/null"] # Keeps the container running indefinitely
+        volumeMounts:
+        - name: host-proc
+          mountPath: /host/proc
+          readOnly: true
+      volumes:
+      - name: host-proc
+        hostPath:
+          path: /proc

@@ -1,0 +1,196 @@
+:root {
+    --background-color: #f7f7f7;
+    --text-color: #141414;
+    --header-background: #ffffff;
+    --header-color: #000000;
+    --highlight: #e7781d;
+    --selected-text: #ffffff;
+    --modal-background: #ffffff;
+    --modal-text: var(--text-color);
+    --link-hover: #000000;
+}
+
+.theme-dark {
+    --background-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --header-background: #333333;
+    --header-color: #ffffff;
+    --selected-background: #4444cc;
+    --selected-text: #ffffff;
+    --modal-background: #222222;
+    --modal-text: #ffffff;
+    --link-color: #00cccc;
+    --link-hover: #00ffff;
+}
+
+.theme-light {
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --header-background: #f0f0f0;
+    --header-color: #000000;
+    --selected-background: #cfcfcf;
+    --selected-text: #000000;
+    --modal-background: #ffffff;
+    --modal-text: #000000;
+    --link-color: #1a73e8;
+    --link-hover: #0056b3;
+}
+
+@font-face {
+    font-family: 'Visby';
+    src: url('/fonts/VisbyLight.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'VisbyBold';
+    src: url('/fonts/VisbyExtrabold.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Visby';
+    font-weight: normal;
+    font-size: 20px;
+}
+
+h1 { 
+    font-size: 85px;
+    color: var(--text-color);
+}
+
+h1, h2, h3 {
+    font-family: 'VisbyBold';
+    font-weight: bold;
+    font-style: normal;
+}
+
+.btn-primary {
+    background-color: var(--text-color);
+    border-color: var(--background-color);
+    color: var(--background-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--highlight); /* Darker green */
+    border-color: var(--text-color);
+    color: var(--text-color);
+}
+
+.btn-outline-primary {
+    border-color: var(--header-color); /* Green border */
+    color: var(--header-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--highlight); /* Darker green */
+    border-color: var(--text-color);
+    color: var(--text-color);
+}
+
+.selected {
+    background-color: var(--highlight) !important;
+    color: var(--selected-text) !important;
+}
+
+.header {
+    background-color: var(--header-background);
+    color: var(--header-color);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+a {
+    color: var(--highlight) !important;
+    background-color: var(--background-color) !important;
+    text-decoration: none !important;
+}
+
+a:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+}
+
+#config-button {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: #333;
+    color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+#config-panel {
+    position: fixed;
+    bottom: 70px;
+    left: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 200px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hidden {
+    display: none;
+}
+
+.config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.config-options label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+
+
+.modal-body {
+    background-color: var(--modal-background);
+    color: var(--modal-text);
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+    word-wrap: break-word;
+    background-color: var(--background-color) !important; 
+    color: var(--text-color) !important;
+}
+
+.json-truncated {
+    white-space: pre-wrap;
+    max-height: 10em;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--background-color) !important;
+}
+
+.json-truncated .ellipsis {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    color: var(--highlight);
+    padding: 0 5px;
+}

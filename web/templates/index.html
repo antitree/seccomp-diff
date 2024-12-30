@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seccomp-Diff</title>
+    <!-- Link to a common CSS framework (Bootstrap) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/shmoocon.css" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <h1>Shmoocon 2025: </h1>
+        <h2>Kubernetes Seccomp-Diff</h2>
+    </div>
+
+    <div class="container py-5">
+        <div class="text-center mb-4">
+            <button class="btn btn-primary" onclick="listContainers()">List Containers</button>
+        </div>
+
+        <h2>Containers</h2>
+        <div id="containers" class="d-flex flex-wrap gap-2 mb-4"></div>
+
+        <div class="text-center mb-4">
+            <button id="runDiffButton" class="btn btn-primary" onclick="runSeccompDiff()" style="display:none;">Run Seccomp Diff</button>
+        </div>
+
+        <h2>Output</h2>
+        <div id="output" class="table-responsive"></div>
+    </div>
+
+    <div id="config-button" onclick="openConfigPanel()">⚙</div>
+<div id="config-panel" class="hidden">
+    <div class="config-header">
+        <h4>Configuration</h4>
+        <button onclick="closeConfigPanel()">✖</button>
+    </div>
+    <div class="config-options">
+        <label for="mode-select">Runtime Mode:</label>
+        <select id="mode-select" onchange="updateConfig('mode', this.value)">
+            <option value="k8s">Kubernetes</option>
+            <option value="Docker">Docker</option>
+        </select>
+        <label for="debug">Debug:
+        <input type="checkbox" id="debug-mode" onchange="updateConfig('debug', this.checked)"></label>
+        <label for="full-mode">Extra Info:
+            <input type="checkbox" id="extra-info" onchange="updateConfig('extra', this.checked)"></label>
+    </div>
+</div>
+
+    <script src="js/shmoocon.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

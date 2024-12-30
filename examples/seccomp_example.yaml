@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-seccomp
+  labels:
+    app: nginx-seccomp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-seccomp
+  template:
+    metadata:
+      labels:
+        app: nginx-seccomp
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        securityContext:
+          seccompProfile:
+            type: RuntimeDefault  # Use the default seccomp profile
+        ports:
+        - containerPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-seccomp2
+  labels:
+    app: nginx-seccomp2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-seccomp2
+  template:
+    metadata:
+      labels:
+        app: nginx-seccomp2
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        securityContext:
+          capabilities:
+            add: ["SYS_TIME", "NET_ADMIN"]
+          seccompProfile:
+            type: RuntimeDefault  # Use the default seccomp profile
+        ports:
+        - containerPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-seccomp3
+  labels:
+    app: nginx-seccomp3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-seccomp3
+  template:
+    metadata:
+      labels:
+        app: nginx-seccomp3
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        securityContext:
+          capabilities:
+            add: ["SYS_ADMIN"]
+          seccompProfile:
+            type: RuntimeDefault  # Use the default seccomp profile
+        ports:
+        - containerPort: 80

@@ -1,0 +1,20 @@
+{
+    "defaultAction": "SCMP_ACT_ALLOW",
+    "syscalls": [
+      {
+        "name": "execve",
+        "action": "SCMP_ACT_LOG",
+        "args": [
+          {
+            "index": 0,
+            "op": "SCMP_CMP_EQ",
+            "value": 3 
+          },
+          {
+            "index": 2,
+            "op": "SCMP_CMP_EQ",
+            "value": 4 
+          }
+        ]
+     }]
+  }
