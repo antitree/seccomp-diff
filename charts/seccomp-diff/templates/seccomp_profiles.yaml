@@ -1,3 +1,4 @@
+{{- if .Values.demos.enabled }}
 ---
 apiVersion: security-profiles-operator.x-k8s.io/v1beta1
 kind: SeccompProfile
@@ -188,3 +189,4 @@ spec:
         - unlinkat
         - utimensat
         - write
+{{- end }}
