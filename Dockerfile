@@ -18,12 +18,13 @@ RUN apt-get update && apt-get install -y \
 #COPY --from=caps /bin/setcap /usr/bin/setcap
 
 # Copy application files
-COPY pybpf /app/pybpf
-COPY syscalls /app/syscalls
-COPY containerd /app/containerd
-COPY examples /app/examples
-COPY static /app/static
-COPY templates /app/templates
+COPY common /app/common
+COPY lib /app/lib
+# COPY syscalls /app/syscalls
+# COPY containerd /app/containerd
+# COPY examples /app/examples
+COPY web /app/web
+# COPY templates /app/templates
 COPY ./*.py /app/
 
 COPY requirements.txt /app/

@@ -61,7 +61,7 @@ def table_to_json(table, full1=None, full2=None):
     rows = [[cell.text for cell in row] for row in table._custom_rows]
     #app.logger.debug(f"Headers: {headers}")
     #app.logger.debug(f"Rows: {rows}")
-    app.logger.error(full1)
+    # app.logger.error(full1)
     return json.dumps({"headers": headers, "rows": rows, "full": [full1, full2]})
 
 @app.route('/syscalls/<filename>.html')

@@ -1,0 +1,190 @@
+---
+apiVersion: security-profiles-operator.x-k8s.io/v1beta1
+kind: SeccompProfile
+metadata:
+  name: profile-block-all
+  annotations:
+    description: "Blocks all syscalls."
+spec:
+  defaultAction: "SCMP_ACT_ERRNO"
+---
+apiVersion: security-profiles-operator.x-k8s.io/v1beta1
+kind: SeccompProfile
+metadata:
+  name: profile-complain-unsafe
+  annotations:
+    description: "UNSAFE: Allows all syscalls whilst logging their use. Similar to running as unconfined in terms of enforcement."
+spec:
+  defaultAction: "SCMP_ACT_LOG"
+---
+apiVersion: security-profiles-operator.x-k8s.io/v1beta1
+kind: SeccompProfile
+metadata:
+  name: profile-allow-unsafe
+  annotations:
+    description: "UNSAFE: Allows all syscalls. Similar to running as unconfined as it provides no enforcement."
+spec:
+  defaultAction: "SCMP_ACT_ALLOW"
+---
+apiVersion: security-profiles-operator.x-k8s.io/v1beta1
+kind: SeccompProfile
+metadata:
+  name: profile-complain-block-high-risk
+  annotations:
+    description: "Enables complain mode whilst blocking high-risk syscalls. Some essential syscalls are allowed to decrease log noise."
+spec:
+  defaultAction: SCMP_ACT_LOG
+  architectures:
+  - SCMP_ARCH_X86_64
+  syscalls:
+  - action: SCMP_ACT_ALLOW
+    names:
+    - exit
+    - exit_group
+    - futex
+    - nanosleep
+
+  - action: SCMP_ACT_ERRNO
+    names:
+    - acct
+    - add_key
+    - bpf
+    - clock_adjtime
+    - clock_settime
+    - create_module
+    - delete_module
+    - finit_module
+    - get_kernel_syms
+    - get_mempolicy
+    - init_module
+    - ioperm
+    - iopl
+    - kcmp
+    - kexec_file_load
+    - kexec_load
+    - keyctl
+    - lookup_dcookie
+    - mbind
+    - mount
+    - move_pages
+    - name_to_handle_at
+    - nfsservctl
+    - open_by_handle_at
+    - perf_event_open
+    - personality
+    - pivot_root
+    - process_vm_readv
+    - process_vm_writev
+    - ptrace
+    - query_module
+    - quotactl
+    - reboot
+    - request_key
+    - set_mempolicy
+    - setns
+    - settimeofday
+    - stime
+    - swapoff
+    - swapon
+    - _sysctl
+    - sysfs
+    - umount2
+    - umount
+    - unshare
+    - uselib
+    - userfaultfd
+    - ustat
+    - vm86old
+    - vm86
+---
+apiVersion: security-profiles-operator.x-k8s.io/v1beta1
+kind: SeccompProfile
+metadata:
+  name: profile-runc-default
+spec:
+  defaultAction: SCMP_ACT_ERRNO
+  architectures:
+    - SCMP_ARCH_X86_64
+  syscalls:
+    - action: SCMP_ACT_ALLOW
+      names:
+        - arch_prctl
+        - brk
+        - capget
+        - capset
+        - chdir
+        - chroot
+        - clone
+        - clone3
+        - close
+        - close_range
+        - dup3
+        - epoll_create1
+        - epoll_ctl
+        - epoll_pwait
+        - execve
+        - exit
+        - exit_group
+        - faccessat
+        - faccessat2
+        - fchdir
+        - fchmodat
+        - fchownat
+        - fcntl
+        - fsconfig
+        - fsmount
+        - fsopen
+        - fstat
+        - fstatfs
+        - futex
+        - getcwd
+        - getdents64
+        - getpid
+        - getppid
+        - getrlimit
+        - gettid
+        - getuid
+        - keyctl
+        - madvise
+        - mkdirat
+        - mknodat
+        - mmap
+        - mount
+        - mprotect
+        - munmap
+        - nanosleep
+        - newfstatat
+        - open_tree
+        - openat
+        - openat2
+        - pipe2
+        - pivot_root
+        - prctl
+        - prlimit64
+        - read
+        - readlinkat
+        - recvfrom
+        - rseq
+        - rt_sigaction
+        - rt_sigprocmask
+        - rt_sigreturn
+        - sched_getaffinity
+        - sched_yield
+        - seccomp
+        - set_robust_list
+        - set_tid_address
+        - setgid
+        - setgroups
+        - sethostname
+        - setsid
+        - setuid
+        - sigaltstack
+        - statfs
+        - statx
+        - symlinkat
+        - tgkill
+        - umask
+        - umount2
+        - unlinkat
+        - utimensat
+        - write

@@ -49,7 +49,7 @@ def get_container_pid(containerd_socket, container_id, namespace="k8s.io"):
         print(f"Error accessing spec for container {container_id}: {e}")
         return None
 
-def get_containers(containerd_socket="/run/containerd/containerd.sock", namespace="k8s.io", with_seccomp=False):
+def get_containers(containerd_socket="/run/containerd/containerd.sock", namespace="k8s.io", with_seccomp=True):
     container_info = {}
 
     # Connect to the containerd gRPC socket
@@ -92,6 +92,10 @@ def get_containers(containerd_socket="/run/containerd/containerd.sock", namespac
                     seccomp_info = spec_json["linux"]["seccomp"]
                 if "process" in spec_json and "capabilities" in spec_json["process"]:
                     capabilities = spec_json["process"]["capabilities"]["permitted"]
+                    
+            # CONFIG: Only return profiles with seccomp profiles
+            if with_seccomp and not seccomp_info:
+                continue
 
             container_info[name] = {
                 "id": container_id,

@@ -1,5 +1,7 @@
+namespace: default
+
 image:
-  repository: seccomp-diff
+  repository: antitree/seccomp-diff
   tag: latest
   pullPolicy: Always
 
@@ -19,21 +21,33 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
+## Custom profiles supported by default:
+# profile-block-all.json
+# profile-complain-unsafe.json
+# profile-allow-unsafe.json
+# profile-complain-block-high-risk.json
+# profile-runc-default.json
+# unconfined - none applied at all
+# RuntimeDefault - uses base runtime config
+
 demos:
-      enabled: false
-      deployments:
-        - name: demo1
-          image: busybox:latest
-          seccompProfile: "demo-seccomp1.json"
-        - name: demo2
-          image: busybox:latest
-          seccompProfile: "demo-seccomp2.json"
-        - name: demo3
-          image: busybox:latest
-          seccompProfile: "demo-seccomp3.json"
-        - name: demo4
-          image: busybox:latest
-          seccompProfile: "demo-seccomp4.json"
-        - name: demo5
-          image: busybox:latest
-          seccompProfile: "demo-seccomp5.json"
+  enabled: true
+  deployments:
+  - name: demo1
+    image: nginx:latest
+    seccompProfile: "profile-complain-unsafe.json"
+  - name: demo2
+    image: nginx:latest
+    seccompProfile: "profile-complain-block-high-risk.json"
+  - name: demo3
+    image: nginx:latest
+    seccompProfile: "profile-block-all.json"
+  - name: demo4
+    image: nginx:latest
+    seccompProfile: "profile-complain-unsafe.json"
+  - name: demo5
+    image: nginx:latest
+    type: Unconfined
+  - name: demo6
+    image: nginx:latest
+    type: RuntimeDefault
