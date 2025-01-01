@@ -1,4 +1,4 @@
-from common.diff import compare_seccomp_policies
+from common.diff import compare_seccomp_policies, get_seccomp_policy
 from common import containerd
 from common import docker
 from flask import Flask, render_template, render_template_string, request, jsonify, send_from_directory, abort
@@ -48,7 +48,7 @@ def list_containers():
         if app.config["MODE"] == "Docker": 
             # TODO testing if I need docker at all
             #return jsonify(list_docker())
-            return jsonify(list_docker(namespace="moby"))
+            return jsonify(list_docker())
         else:
             return jsonify(list_k8s(namespace="k8s.io"))
     except Exception as e:
@@ -168,6 +168,21 @@ def run_seccomp_diff():
         return jsonify({"output": table_json})
     except ValueError as e:
         return jsonify({"diff error": str(e)}), 500
+    
+@app.route('/get_container', methods=['POST'])
+def get_container():
+    """Fetch details for a single container."""
+    container = request.json.get('container')
+    if not container:
+        return jsonify({"error": "Please select a container."}), 400
+
+    try:
+        container = get_seccomp_policy(container)
+
+        return jsonify({"details": container_details})
+    except Exception as e:
+        app.logger.error(f"Error fetching container details: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

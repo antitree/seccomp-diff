@@ -25,6 +25,45 @@ dangerous_syscalls = [
     "umount2", "unshare", "uselib", "userfaultfd", "ustat", "vm86", "vm86old"
 ]
 
+def get_seccomp_policy(container1):
+    full1, d1 = get_seccomp_filters(container1["pid"])
+    if d1: 
+        container1["summary"] = d1.syscallSummary
+    else:
+        container1["summary"] = {}
+
+    da1 = d1.defaultAction
+
+    console = Console()
+    table = Table(show_header=True, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)
+    table.add_column(header="Container", justify="left", min_width=20)
+    table.add_column(header=container1["name"], justify="left", max_width=20, overflow=None)
+    table.add_column(header=container2["name"], justify="left", max_width=20, overflow=None)
+
+    # Add Seccomp and Capabilities Information
+    table.add_custom_row("[b]seccomp", container1["seccomp"])
+    table.add_custom_row("[b]caps", container1["caps"], end_section=True)
+
+    # Iterate through the global SYSCALLS dict
+    for syscall_num, syscall_info in SYSCALLS.items():
+        syscall_name = syscall_info[1]
+
+        # Determine effective policy for container1
+        if syscall_name in container1["summary"]:
+            action1 = container1["summary"][syscall_name].get("action", da1)
+            count1 = container1["summary"][syscall_name].get("count", 0)
+            effective_policy1 = f"{action1}"
+        else:
+            effective_policy1 = f"{da1}"
+
+        table.add_custom_row(syscall_name, effective_policy1)
+
+    # Add total instructions row
+    container1["total"] = container1["summary"].get("total", {"count": 0}).get("count")
+    table.add_custom_row("Total Instructions", str(container1["total"]))
+    
+    return table, full1
+
 def compare_seccomp_policies(container1, container2, full=False):
     try:
         # Extract SeccompSummary for both PIDs
