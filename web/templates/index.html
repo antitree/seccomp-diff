@@ -56,9 +56,22 @@
 
         <div class="text-center mb-4 d-flex justify-content-center align-items-center gap-3">
             <input type="text" id="nameFilter" class="form-control w-auto" placeholder="Filter by name" oninput="filterByName()">
-            <button id="runDiffButton" class="btn btn-primary" onclick="runSeccompDiff()" style="display:none;">Run Seccomp Diff</button>
+            <button id="runDiffButton" class="btn btn-primary" onclick="runSeccompDiff()" style="display:inline-block;">Run Seccomp Diff</button>
+            <div class="tooltip-container">
             <i id="icon1" class="bi bi-funnel-fill icon-toggle icon-enabled" onclick="toggleIcon(this, 'only_diff')"></i>
-            <i id="icon2" class="bi bi-bug-fill icon-toggle icon-disabled" onclick="toggleIcon(this, 'only_dangerous')"></i>
+            <span class="tooltip-text">Show the differences between two filters and strip out everything else</span>
+            </div>
+
+            <div class="tooltip-container">
+            <i id="icon2" class="bi bi-exclamation-triangle-fill icon-toggle icon-disabled" onclick="toggleIcon(this, 'only_dangerous')"></i>
+            <span class="tooltip-text">Show only system calls that have a major security impact</span>
+            </div>
+
+            <div class="tooltip-container">
+            <i id="icon3" class="bi bi-file-code-fill icon-toggle icon-disabled" title="This is code or something" onclick="toggleIcon(this, 'reduce')"></i>
+            <span class="tooltip-text">Show the true actions from the seccomp policy</span>
+            </div>
+
             <button id="getContainerButton" class="btn btn-secondary" onclick="getContainer()" style="display:none;">Get Container Details</button>
         </div>
 

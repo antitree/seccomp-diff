@@ -98,7 +98,6 @@ async function runSeccompDiff() {
                     const td = document.createElement('td');
 
                     // Check for style indicators like [b], [red]
-
                     const styleMatch = cell && cell.match(/^\[(\w+)](.*)$/);
                     if (styleMatch) {
                         const style = styleMatch[1].toLowerCase();
@@ -134,6 +133,31 @@ async function runSeccompDiff() {
                             td.innerHTML = `<pre>${prettyJson}</pre>`;
                         }
                     } else if (index === 0 && rowIndex > 1) { // First column (Syscall) with modal for tooltip, skipping first two rows
+                        const emojiMatch = cell && cell.match(/:(\w+):/g);
+                        let inject = '';
+                        if (emojiMatch) {
+                            let content = cell;
+
+                            // Map of emoji names to their corresponding Bootstrap icons
+                            const emojiMap = {
+                                warning: '<i class="bi bi-exclamation-triangle-fill highlight"></i>',
+                                smile: '<i class="bi bi-emoji-smile highlight"></i>',
+                                heart: '<i class="bi bi-heart-fill highlight"></i>',
+                                thumbs_up: '<i class="bi bi-hand-thumbs-up-fill highlight"></i>',
+                                fire: '<i class="bi bi-fire"></i>',
+                                // Add more Bootstrap icon mappings as needed
+                            };
+
+                            emojiMatch.forEach(match => {
+                                const emojiKey = match.slice(1, -1); // Remove colons, e.g., :warning: -> warning
+                                if (emojiMap[emojiKey]) {
+                                    inject = emojiMap[emojiKey];
+                                    cell = content.replace(match, '');
+                                }
+                            });
+                        }
+                        
+                        
                         const link = document.createElement('a');
                         link.href = "#";
                         link.textContent = cell;
@@ -141,8 +165,10 @@ async function runSeccompDiff() {
                             e.preventDefault();
                             fetchStaticHtml(cell);
                         };
-                        td.innerHTML = "";
+                        td.innerHTML = inject;
+                        
                         td.appendChild(link);
+                        
                     }
 
                     tr.appendChild(td);

@@ -155,14 +155,15 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
         return jsonify({"error": "Please select exactly two containers."}), 400
     
     reduce_selection = request.json.get('reduce')
-    if reduce_selection:
-        reduce = reduce_selection
+    if reduce_selection != None: 
+        # hack because english is hard
+        reduce = not reduce_selection
     
     only_diff_selection = request.json.get('only_diff')
-    if only_diff_selection:
+    if only_diff_selection != None:
         only_diff = only_diff_selection
     only_dangerous_selection = request.json.get('only_dangerous')
-    if only_dangerous_selection:
+    if only_dangerous_selection != None: 
         only_dangerous = only_dangerous_selection
 
     try:

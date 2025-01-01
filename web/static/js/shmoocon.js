@@ -61,7 +61,8 @@ function updateConfig(key, value) {
 window.onload = function() {
     const toggles = [
         { id: 'icon1', key: 'only_diff' },
-        { id: 'icon2', key: 'only_dangerous' }
+        { id: 'icon2', key: 'only_dangerous' },
+        { id: 'icon3', key: 'reduce' }
     ];
     const savedMode = configState.get("mode");
     if (savedMode) {
@@ -75,6 +76,8 @@ window.onload = function() {
             modeIcon.innerHTML = '<img src="images/kubernetes-icon.png" onclick="updateConfig(\'mode\', \'k8s\');updateModeIcon()" alt="Docker Icon" style="width: 50px;">';
         }
     }
+
+    document.getElementById('runDiffButton').style.backgroundColor = 'grey';
 
     
 
@@ -142,7 +145,13 @@ function toggleSelection(container, button) {
         button.classList.add('selected');
     }
 
-    document.getElementById('runDiffButton').style.display = selectedContainers.length === 2 ? 'inline-block' : 'none';
+    //document.getElementById('runDiffButton').style.display = selectedContainers.length === 2 ? 'inline-block' : 'none';
+    //document.getElementById('runDiffButton').style.backgroundColor = selectedContainers.length === 2 ? 'black' : 'grey';
+    if (selectedContainers.length !== 2){
+        document.getElementById('runDiffButton').style.backgroundColor = 'grey';
+    } else {
+        document.getElementById('runDiffButton').style.backgroundColor = '';
+    }
 }
 
 async function showModal(content) {

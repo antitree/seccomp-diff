@@ -71,6 +71,10 @@ h1, h2, h3 {
     font-style: normal;
 }
 
+.highlight {
+    color: var(--highlight);
+}
+
 .icon-toggle {
     cursor: pointer;
     font-size: 20px;
@@ -90,18 +94,18 @@ h1, h2, h3 {
 }
 
 .btn-primary:hover {
-    background-color: var(--highlight); /* Darker green */
+    background-color: var(--highlight);
     border-color: var(--text-color);
     color: var(--text-color);
 }
 
 .btn-outline-primary {
-    border-color: var(--header-color); /* Green border */
+    border-color: var(--header-color); 
     color: var(--header-color);
 }
 
 .btn-outline-primary:hover {
-    background-color: var(--highlight); /* Darker green */
+    background-color: var(--highlight);
     border-color: var(--text-color);
     color: var(--text-color);
 }
@@ -117,6 +121,35 @@ h1, h2, h3 {
     padding: 20px;
     text-align: center;
     margin-bottom: 20px;
+}
+
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-container .tooltip-text {
+    visibility: hidden;
+    background-color: black;
+    color: white;
+    text-align: center;
+    padding: 5px;
+    border-radius: 5px;
+    position: absolute;
+    bottom: 125%; /* Position above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s;   
+    width: 200px;
+    word-wrap: break-word;
+
+}
+
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
 }
 
 a {
