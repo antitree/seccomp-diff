@@ -32,13 +32,24 @@ def get_container_pid(containerd_socket, container_id, namespace="k8s.io"):
     """
     channel = grpc.insecure_channel(f"unix://{containerd_socket}")
     client = tasks_pb2_grpc.TasksStub(channel)
+    
 
     # Specify the namespace in the metadata
     metadata = (("containerd-namespace", namespace),)
     try:
-        request = tasks_pb2.GetRequest(container_id=container_id)
-        response = client.Get(request, metadata=metadata)
-
+        # TODO this isn't always consistent. Fix to make more reliable
+        # this works at getting the pid sometimes but if the parrent process dies...
+        # request = tasks_pb2.GetRequest(container_id=container_id)
+        # response = client.Get(request, metadata=metadata)
+        
+        # This works at getting pids of running process
+        response = client.ListPids(tasks_pb2.ListPidsRequest(container_id=container_id), metadata=metadata)
+        if response:
+            for process in response.processes:
+                return process.pid
+        
+        #print(response)  
+        
         # The OCI spec is returned as part of the response
         if response.process: 
             pid = response.process.pid
@@ -46,10 +57,25 @@ def get_container_pid(containerd_socket, container_id, namespace="k8s.io"):
             pid = None
         return pid
     except grpc.RpcError as e:
-        print(f"Error accessing spec for container {container_id}: {e}")
+        print(f"Error accessing PID for container {container_id}/{metadata}: {e}")
         return None
 
-def get_containers(containerd_socket="/run/containerd/containerd.sock", namespace="k8s.io", with_seccomp=True):
+def get_container_image(containerd_socket, container_id, namespace="k8s.io"):
+    channel = grpc.insecure_channel(f"unix://{containerd_socket}")
+    client = containers_pb2_grpc.ContainersStub(channel)
+    
+    # Specify the namespace in the metadata
+    metadata = (("containerd-namespace", namespace),)
+    
+    # Get container details
+    try:
+        response = client.Get(containers_pb2.GetContainerRequest(id=container_id), metadata=metadata)
+        return response.container.image
+    except grpc.RpcError as e:
+        print(f"Error fetching details for container {container_id}: {e.details()}")
+        return None
+
+def get_containers(containerd_socket="/run/containerd/containerd.sock", namespace="k8s.io", with_seccomp=False):
     container_info = {}
 
     # Connect to the containerd gRPC socket
@@ -60,55 +86,65 @@ def get_containers(containerd_socket="/run/containerd/containerd.sock", namespac
         # Specify the namespace in the metadata
         metadata = (("containerd-namespace", namespace),)
         request = containers_pb2.ListContainersRequest()
-        response = client.List(request, metadata=metadata)
-        
-        
-
-        for container in response.containers:
-            container_id = container.id
-            name = container_id
-            runtime = container.runtime.name
-            image = None
-            
-            labels = None
-            # TODO Fix this to make it more accurate
-            # try: 
-            #     #labels = container.labels
-            #     # if labels and "io.kubernetes.container.name" in labels:
-            #     #     name = labels["io.kubernetes.container.name"]
-            #     #     image = labels["io.kubernetes.container.image"]
-            # except Exception as e:
-            #     print(e)
-            
-            pid = get_container_pid(containerd_socket, container_id, namespace)
-            if not pid:
-                print("Error: Containerd container not found")
-                break
-            
-            seccomp_info = "unknown"
-            if container.spec:
-                spec_json = json.loads(container.spec.value)
-                if "linux" in spec_json and "seccomp" in spec_json["linux"]:
-                    seccomp_info = spec_json["linux"]["seccomp"]
-                if "process" in spec_json and "capabilities" in spec_json["process"]:
-                    capabilities = spec_json["process"]["capabilities"]["permitted"]
-                    
-            # CONFIG: Only return profiles with seccomp profiles
-            if with_seccomp and not seccomp_info:
-                continue
-
-            container_info[name] = {
-                "id": container_id,
-                "name": name,
-                "runtime": runtime,
-                "seccomp": str(seccomp_info),
-                "image": image,
-                "pid": pid,
-                "labels": labels,
-                "caps": "\n".join(capabilities),
-            }
+        response = client.List(request, metadata=metadata)       
     except grpc.RpcError as e:
-        print(f"Error accessing containerd: {e}")
+        print(f"Error accessing containerd: {e}")    
+        
+    
+    for container in response.containers:
+        container_id = container.id
+        name = container_id
+        runtime = container.runtime.name
+        
+        labels, container_namespace, image = None, None, None
+        # TODO Fix this to make it more accurate
+        labels = container.labels
+        if labels and "io.kubernetes.container.name" in labels:
+            name = str(labels["io.kubernetes.container.name"])
+        elif "io.kubernetes.pod.name" in labels: 
+            name = str(labels["io.kubernetes.pod.name"])
+        
+        if "io.kubernetes.pod.namespace" in labels: 
+            container_namespace = str(labels["io.kubernetes.pod.namespace"])
+            
+        try: 
+            pid = get_container_pid(containerd_socket, container_id, namespace=namespace)
+            # TODO clean this up. Either it's a there or it's not
+            # if not pid:
+            #     print(f"Error: Containerd container {container_id} not found")
+            #     break
+        except Exception as e:
+            print(f"UNCAUGHT EXCEPTION: NEEEDS INVESTIGATION: {e}")
+            
+            
+        # get container image
+        image = get_container_image(containerd_socket, container_id, namespace=namespace)
+        
+        seccomp_info = "unknown"
+        capabilities = []
+        if container.spec:
+            spec_json = json.loads(container.spec.value)
+            if "linux" in spec_json and "seccomp" in spec_json["linux"]:
+                seccomp_info = spec_json["linux"]["seccomp"]
+            if "process" in spec_json and "capabilities" in spec_json["process"] and "permitted" in spec_json["process"]["capabilities"]:
+                capabilities = spec_json["process"]["capabilities"]["permitted"]
+                
+        # CONFIG: Only return profiles with seccomp profiles
+        if with_seccomp and not seccomp_info:
+            continue
+
+        container_info[name] = {
+            "id": container_id,
+            "name": name,
+            "runtime": runtime,
+            "seccomp": str(seccomp_info),
+            "image": image,
+            "pid": pid,
+            "labels": str(labels),
+            "caps": "\n".join(capabilities),
+            "namespace": container_namespace,
+        }
+    
 
     return container_info
 

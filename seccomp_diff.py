@@ -59,25 +59,30 @@ def main():
     else:
         ENV = "Docker"
 
-    console = Console()
+    console = Console(width=80)
     table = Table(show_header=True, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)
     table.add_column(header="Container", justify="left", min_width=20)
     table.add_column(header="PID", justify="left", min_width=0)
-    table.add_column(header="Seccomp Profile", justify="left", max_width=40)
-    table.add_column(header="Added Capabilities", justify="left", min_width=0, max_width=20, no_wrap=True)
+    table.add_column(header="Seccomp Profile", justify="left", max_width=40, overflow="ellipsis")
+    table.add_column(header="Added Capabilities", justify="left", min_width=0, max_width=20, no_wrap=True, overflow="ellipsis")
     
     try:
         # Get container PIDs
         # check if it's docker or k8s environment
         if ENV == "Docker":
-            #container_pids = list_docker_pids.get_container_pids()
+            # TODO come back to this to see if we like it
+            # I think the best option is to query docker to 
+            # get the containerd id and then query containerd 
+            # to get the rest
             containers = docker.get_containers()
+            #containers = containerd.get_containers(namespace="moby")
             
+            # TODO come back to this if its a better ux
             # Sort containers by PID in descending order
             containers = dict(sorted(containers.items(), key=lambda item: item[1]["pid"], reverse=True))
                 
         elif ENV == "k8s":
-            containers = containerd.get_containers()
+            containers = containerd.get_containers(namespace="k8s.io")
             
         for name, values in containers.items():
             table.add_custom_row(name, str(values["pid"]), values["seccomp"], str(values["caps"]))
@@ -91,7 +96,14 @@ def main():
 
         # Compare seccomp policies
         table, _, _ = compare_seccomp_policies(containers[container1], containers[container2])
-        console.print(table)
+        
+        
+        console.options.max_height = 5
+        console.options.height = 1
+        console.options.is_terminal = True
+        console.options.overflow = None
+        console.options.update()
+        console.print(table, soft_wrap=True)
 
     except ValueError as e:
         print(f"Invalid container names: {e}")

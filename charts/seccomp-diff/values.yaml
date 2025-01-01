@@ -22,7 +22,7 @@ tolerations: []
 affinity: {}
 
 ## Custom profiles supported by default:
-# profile-block-all.json
+# profile-block-all.json (Warning!! will likely not let you start a container)
 # profile-complain-unsafe.json
 # profile-allow-unsafe.json
 # profile-complain-block-high-risk.json

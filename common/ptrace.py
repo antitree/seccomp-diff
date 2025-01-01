@@ -54,12 +54,14 @@ def ptrace(request, pid, addr, data):
         errno = ctypes.get_errno()
         if errno > 0:
             print(f"PTRACE error: {os.strerror(errno)}")
+        print(f"Error PTRACE'ing the process {pid}. Are you sure you have the right permissions?")
     return result
 
 def get_seccomp_filters(pid):
     """Retrieve seccomp filters applied to the process with the given PID."""
     # Attach to the target process
-    ptrace(PTRACE_ATTACH, pid, 0, 0)
+    result = ptrace(PTRACE_ATTACH, pid, 0, 0)
+    
 
     # Wait for the process to stop
     try: 

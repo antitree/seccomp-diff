@@ -9,8 +9,10 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_ENV=development
 
 # Install required system packages
+# TODO delete these after testing phase
 RUN apt-get update && apt-get install -y \
     libseccomp-dev \
+    containerd \
     vim \
     && rm -rf /var/lib/apt/lists/*
 

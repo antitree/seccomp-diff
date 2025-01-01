@@ -31,8 +31,8 @@ def list_docker():
     return {"containers": containers}
     
 
-def list_k8s():
-    container_pids = containerd.get_containers(namespace="k8s.io")
+def list_k8s(namespace="k8s.io"):
+    container_pids = containerd.get_containers(namespace=namespace)
     containers = []
     # TODO there's a better way to do this but I'm tired
     for container, values in container_pids.items():
@@ -46,9 +46,11 @@ def list_containers():
     
     try:
         if app.config["MODE"] == "Docker": 
-            return jsonify(list_docker())
+            # TODO testing if I need docker at all
+            #return jsonify(list_docker())
+            return jsonify(list_docker(namespace="moby"))
         else:
-            return jsonify(list_k8s())
+            return jsonify(list_k8s(namespace="k8s.io"))
     except Exception as e:
         app.logger.error(f"Error during listing containers: {e} ")
         return jsonify({"error": str(e)}), 500
