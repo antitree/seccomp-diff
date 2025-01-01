@@ -12,9 +12,6 @@ app = Flask(__name__,
             static_folder="web/static",
             template_folder="web/templates",
             )
-if app.debug: 
-    app.config["PROPAGATE_EXCEPTIONS"] = True
-app.config["MODE"] = "k8s"
 
 @app.route('/')
 def index():
@@ -62,7 +59,7 @@ def table_to_json(table, full1=None, full2=None):
     headers = [column.header for column in table.columns]
     rows = [[cell.text for cell in row] for row in table._custom_rows]
     #app.logger.debug(f"Headers: {headers}")
-    #app.logger.debug(f"Rows: {rows}")
+    
     # app.logger.error(full1)
     return json.dumps({"headers": headers, "rows": rows, "full": [full1, full2]})
 
@@ -128,6 +125,10 @@ def get_css(path):
 def get_font(path):
      return send_from_directory(os.path.join(app.static_folder, 'fonts'), path)
  
+@app.route('/images/<path:path>', methods=['GET'])
+def get_image(path):
+     return send_from_directory(os.path.join(app.static_folder, 'images'), path)
+ 
 @app.route('/debug', methods=['GET'])
 def run_debug():
     if app.debug: 
@@ -143,25 +144,39 @@ def update_config():
         app.logger.warning(data["mode"])
     if 'debug' in data:
         app.config["DEBUG"] = data['debug']
+        app.logger.warning(data["debug"])    
     return jsonify({"status": "success"})
 
 @app.route('/run_seccomp_diff', methods=['POST'])
-def run_seccomp_diff():
+def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
     """Run the seccomp_diff function with selected container details."""
     container_selection = request.json.get('containers')
     if not container_selection or len(container_selection) != 2:
         return jsonify({"error": "Please select exactly two containers."}), 400
+    
+    reduce_selection = request.json.get('reduce')
+    if reduce_selection:
+        reduce = reduce_selection
+    
+    only_diff_selection = request.json.get('only_diff')
+    if only_diff_selection:
+        only_diff = only_diff_selection
+    only_dangerous_selection = request.json.get('only_dangerous')
+    if only_dangerous_selection:
+        only_dangerous = only_dangerous_selection
 
     try:
         container1, container2 = container_selection
-        # app.logger.debug(f'Container1: {container1}')
-        # app.logger.debug(f'Container2: {container2}')
-
-        
 
         # Generate the table using compare_seccomp_policies
-        table,full1,full2 = compare_seccomp_policies(container1, container2)
-        #app.logger.warning(full1)
+        table,full1,full2 = compare_seccomp_policies(
+            container1, container2, 
+            reduce=reduce,
+            only_diff=only_diff,
+            only_dangerous=only_dangerous,
+            )
+        app.logger.debug(f"Reduce: {reduce}, only_diff: {only_diff}, only_dangerous: {only_dangerous}")
+        
         
         # Convert the table to JSON
         table_json = table_to_json(table, full1, full2)
@@ -185,4 +200,8 @@ def get_container():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
+    app.debug = True
+    if app.debug: 
+        app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config["MODE"] = "k8s"
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -1,12 +1,50 @@
+async function listContainers() {
+    try {
+        console.log("Fetching list of containers...");
+        const response = await fetch('/list_containers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error fetching containers: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("Containers fetched:", data);
+
+        allContainers = data.containers || [];
+        updateNamespaceFilter();
+        renderContainers(allContainers);
+    } catch (error) {
+        console.error("Error occurred while listing containers:", error);
+        alert(`Error: ${error.message}`);
+    }
+}
+
 async function runSeccompDiff() {
     try {
         console.log("Running seccomp diff...");
+
+        const reduce = configState.get("reduce");
+        const only_diff = configState.get("only_diff");
+        const only_dangerous = configState.get("only_dangerous");
+
+        console.log(`"only_dangerous" set to`, configState.get("only_dangerous")); // Debug output
+
         const response = await fetch('/run_seccomp_diff', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ containers: selectedContainers })
+            body: JSON.stringify({ 
+                containers: selectedContainers,
+                reduce: reduce, 
+                only_diff: only_diff,
+                only_dangerous: only_dangerous
+             })
         });
 
         if (!response.ok) {

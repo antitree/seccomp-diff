@@ -6,26 +6,21 @@
     <title>Seccomp-Diff</title>
     <!-- Link to a common CSS framework (Bootstrap) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="css/shmoocon.css" rel="stylesheet">
 </head>
 <body>
     <div class="header text-center py-3">
         <h1>Shmoocon 2025</h1>
         <h2>Kubernetes Seccomp-Diff</h2>
+        <div id="modeIcon" class="mt-3">
+            <!-- Icon will be dynamically set based on mode -->
+        </div>
     </div>
 
     <div class="container py-5">
-        <div class="text-center mb-4">
-            <button class="btn btn-primary" onclick="listContainers()">List Containers</button>
-        </div>
-
-        <h2 class="mb-3">Containers</h2>
-        <div id="containers" class="d-flex flex-wrap gap-2 mb-4"></div>
-
         <div class="text-center mb-4 d-flex justify-content-center align-items-center gap-3">
-            <input type="text" id="nameFilter" class="form-control w-auto" placeholder="Filter by name" oninput="filterByName()">
-            <button id="runDiffButton" class="btn btn-primary" onclick="runSeccompDiff()" style="display:none;">Run Seccomp Diff</button>
-            <button id="getContainerButton" class="btn btn-secondary" onclick="getContainer()" style="display:none;">Get Container Details</button>
+            <button class="btn btn-primary" onclick="listContainers()">List Containers</button>
             <div id="toolbar" class="position-relative">
                 <button id="toolbarToggle" class="btn btn-secondary">☰</button>
                 <div id="toolbarContent" class="position-absolute p-3 border bg-light shadow" style="display: none; width: 300px;">
@@ -38,14 +33,33 @@
                     </div>
                     <div class="form-check mb-3">
                         <input type="checkbox" class="form-check-input" id="filterSeccompProfile" onchange="filterBySeccompProfile()">
-                        <label for="filterSeccompProfile" class="form-check-label">Only show containers with Seccomp profiles</label>
+                        <label for="filterSeccompProfile" class="form-check-label">Seccomp only</label>
                     </div>
                     <div class="form-check mb-3">
                         <input type="checkbox" class="form-check-input" id="hideKubeSystem" onchange="filterHideKubeSystem()">
-                        <label for="hideKubeSystem" class="form-check-label">Hide "kube-system" namespace</label>
+                        <label for="hideKubeSystem" class="form-check-label">Hide kube-system"</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" checked class="form-check-input" id="All syscalls" onchange="updateConfig('diff', this.checked)">
+                        <label for="showAllSyscalls" class="form-check-label">All syscalls</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="Only critical syscalls" onchange="updateConfig(reduce, this.checked ? false : true))">
+                        <label for="showAllSyscalls" class="form-check-label">Raw action output</label>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <h2 class="mb-3">Containers</h2>
+        <div id="containers" class="d-flex flex-wrap gap-2 mb-4"></div>
+
+        <div class="text-center mb-4 d-flex justify-content-center align-items-center gap-3">
+            <input type="text" id="nameFilter" class="form-control w-auto" placeholder="Filter by name" oninput="filterByName()">
+            <button id="runDiffButton" class="btn btn-primary" onclick="runSeccompDiff()" style="display:none;">Run Seccomp Diff</button>
+            <i id="icon1" class="bi bi-funnel-fill icon-toggle icon-enabled" onclick="toggleIcon(this, 'only_diff')"></i>
+            <i id="icon2" class="bi bi-bug-fill icon-toggle icon-disabled" onclick="toggleIcon(this, 'only_dangerous')"></i>
+            <button id="getContainerButton" class="btn btn-secondary" onclick="getContainer()" style="display:none;">Get Container Details</button>
         </div>
 
         <h2 class="mb-3">Output</h2>
@@ -62,17 +76,13 @@
         </div>
         <div class="config-options">
             <label for="mode-select" class="form-label">Runtime Mode:</label>
-            <select id="mode-select" class="form-select mb-3" onchange="updateConfig('mode', this.value)">
+            <select id="mode-select" class="form-select mb-3" onchange="updateServerConfig('mode', this.value); updateModeIcon()">
                 <option value="k8s">Kubernetes</option>
                 <option value="Docker">Docker</option>
             </select>
             <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="debug-mode" onchange="updateConfig('debug', this.checked)">
+                <input class="form-check-input" type="checkbox" id="debug-mode" onchange="updateServerConfig('debug', this.checked)">
                 <label class="form-check-label" for="debug-mode">Debug</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="extra-info" onchange="updateConfig('extra', this.checked)">
-                <label class="form-check-label" for="extra-info">Extra Info</label>
             </div>
         </div>
     </div>

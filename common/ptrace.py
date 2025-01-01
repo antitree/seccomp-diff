@@ -4,7 +4,7 @@ import os
 import sys
 import ctypes
 import ctypes.util
-import argparse
+
 from rich.console import Console
 from rich.table import Table
 from rich import box
@@ -131,17 +131,34 @@ def list_seccomp_filters(pid, dump=False, summary=True, allarch=True):
 
     if allarch:
         print("Filtering for non-x86-specific instructions is not implemented yet.")
+        
 
-def main():
-    """Entry point for the script."""
-    parser = argparse.ArgumentParser(description="Inspect seccomp profiles for a given PID.")
-    parser.add_argument("pid", type=int, help="PID of the process to inspect")
-    parser.add_argument("--dump", action="store_true", help="Dump the raw seccomp filters")
-    parser.add_argument("--summary", action="store_true", help="Display a summary of the seccomp filters")
-    parser.add_argument("--allarch", action="store_true", help="Search for all syscalls across any architecture")
 
-    args = parser.parse_args()
-    list_seccomp_filters(args.pid, dump=args.dump, summary=args.summary, allarch=args.allarch)
+def list_seccomp_pids():
+    # Iterate through all the folders in /proc
+    FILTER = True
+    
+    console = Console()
+    table = Table(show_header=False, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)
+    table.add_column(header="PID", justify="left", min_width=20)
+    table.add_column(header="Seccomp Mode", justify="left", min_width=20)
 
-if __name__ == "__main__":
-    main()
+    for pid in os.listdir('/proc'):
+        if pid.isdigit():
+            status_path = f"/proc/{pid}/status"
+            # Check if the status file exists for this PID
+            cmd = "Unknown"
+            if os.path.isfile(status_path):
+                with open(status_path, 'r') as status_file:
+                    for line in status_file:
+                        if line.startswith("Name:"):
+                            cmd = line.split()[1]
+                        if line.startswith("Seccomp_filters:"):
+                            no_instructions = line.split()[1]
+                            if FILTER and int(no_instructions) < 1:
+                                break
+                            else: 
+                                # Print the PID and the seccomp value
+                                table.add_row(f"{cmd}({pid})",no_instructions)
+                            break
+    return table

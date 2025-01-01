@@ -35,4 +35,4 @@ EXPOSE 5000
 RUN apt-get purge -y gcc && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # Command to run the Flask app
-CMD ["flask", "run"]
+CMD ["flask", "run", "--debug"]

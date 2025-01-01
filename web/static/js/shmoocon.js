@@ -2,31 +2,94 @@ let selectedContainers = [];
 let allContainers = []; // To keep track of all containers for filtering
 let namespaces = []; // To store available namespaces
 
-async function listContainers() {
-    try {
-        console.log("Fetching list of containers...");
-        const response = await fetch('/list_containers', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
 
-        if (!response.ok) {
-            throw new Error(`Error fetching containers: ${response.statusText}`);
-        }
 
-        const data = await response.json();
-        console.log("Containers fetched:", data);
+// function toggleIcon(icon, option) {
+//     const isEnabled = icon.classList.contains('icon-enabled');
+//     if (isEnabled) {
+//         icon.classList.remove('icon-enabled');
+//         icon.classList.add('icon-disabled');
+//         updateConfig(option, false);
+//     } else {
+//         icon.classList.remove('icon-disabled');
+//         icon.classList.add('icon-enabled');
+//         updateConfig(option, true);
+//     }
+// }
 
-        allContainers = data.containers || [];
-        updateNamespaceFilter();
-        renderContainers(allContainers);
-    } catch (error) {
-        console.error("Error occurred while listing containers:", error);
-        alert(`Error: ${error.message}`);
+
+// Create a session storage wrapper for managing configuration state
+const configState = {
+    get: function(key) {
+        const value = sessionStorage.getItem(key);
+        return value !== null ? JSON.parse(value) : null;
+    },
+    set: function(key, value) {
+        sessionStorage.setItem(key, JSON.stringify(value));
+    },
+    remove: function(key) {
+        sessionStorage.removeItem(key);
+    },
+};
+
+// Toggle icon state and update session storage
+function toggleIcon(icon, sessionKey) {
+    // Check current state
+    const isEnabled = icon.classList.contains('icon-enabled');
+
+    // Toggle icon class
+    if (isEnabled) {
+        icon.classList.remove('icon-enabled');
+        icon.classList.add('icon-disabled');
+        configState.set(sessionKey, false); // Update session storage
+    } else {
+        icon.classList.remove('icon-disabled');
+        icon.classList.add('icon-enabled');
+        configState.set(sessionKey, true); // Update session storage
     }
+
+    console.log(`${sessionKey} set to`, configState.get(sessionKey)); // Debug output
 }
+
+// Generic function to update configuration state
+function updateConfig(key, value) {
+    configState.set(key, value);
+    console.log(`${key} updated to`, value); // Debug output
+}
+
+// Example usage: Restore the state of toggles on page load
+window.onload = function() {
+    const toggles = [
+        { id: 'icon1', key: 'only_diff' },
+        { id: 'icon2', key: 'only_dangerous' }
+    ];
+    const savedMode = configState.get("mode");
+    if (savedMode) {
+        const modeIcon = document.getElementById('modeIcon');
+        updateServerConfig("mode", savedMode);
+        if (savedMode === 'k8s') {
+            modeIcon.innerHTML = '<img src="images/kubernetes-icon.png" onclick="updateConfig(\'mode\', \'Docker\');updateModeIcon()" alt="Kubernetes Icon" style="width: 50px;">';
+        } else if (savedMode === 'Docker') {
+            modeIcon.innerHTML = '<img src="images/docker-icon.png" onclick="updateConfig(\'mode\', \'k8s\');updateModeIcon()" alt="Docker Icon" style="width: 50px;">';
+        } else {
+            modeIcon.innerHTML = '<img src="images/kubernetes-icon.png" onclick="updateConfig(\'mode\', \'k8s\');updateModeIcon()" alt="Docker Icon" style="width: 50px;">';
+        }
+    }
+
+    
+
+    toggles.forEach(toggle => {
+        const element = document.getElementById(toggle.id);
+        const storedState = configState.get(toggle.key);
+
+        if (storedState !== null) {
+            element.classList.toggle('icon-enabled', storedState);
+            element.classList.toggle('icon-disabled', !storedState);
+        }
+    });
+};
+
+
 
 function renderContainers(containers) {
     const containerDiv = document.getElementById('containers');
@@ -136,7 +199,7 @@ function closeConfigPanel() {
     document.getElementById('config-panel').classList.add('hidden');
 }
 
-async function updateConfig(key, value) {
+async function updateServerConfig(key, value) {
     try {
         const response = await fetch('/update-config', {
             method: 'POST',
@@ -152,6 +215,8 @@ async function updateConfig(key, value) {
 
         const data = await response.json();
         console.log('Updated config:', data.config);
+        configState.set(key, value);
+        
     } catch (error) {
         console.error('Error updating configuration:', error);
     }

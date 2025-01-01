@@ -71,6 +71,18 @@ h1, h2, h3 {
     font-style: normal;
 }
 
+.icon-toggle {
+    cursor: pointer;
+    font-size: 20px;
+    margin-left: 10px;
+}
+.icon-enabled {
+    color: var(--highlight);
+}
+.icon-disabled {
+    color: #6c757d;
+}
+
 .btn-primary {
     background-color: var(--text-color);
     border-color: var(--background-color);
