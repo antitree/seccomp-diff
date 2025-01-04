@@ -137,7 +137,7 @@ def get_containers(containerd_socket="/run/containerd/containerd.sock", namespac
             "id": container_id,
             "name": name,
             "runtime": runtime,
-            "seccomp": str(seccomp_info),
+            "seccomp": json.dumps(seccomp_info),
             "image": image,
             "pid": pid,
             "labels": str(labels),

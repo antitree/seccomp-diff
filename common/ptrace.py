@@ -1,4 +1,5 @@
 from lib.pybpf.disassembler import BPFDecoder, BPFDisassembler
+from common.sockfilter import SockFilter, SockFprog, RUNTIMEDEFAULT
 
 import os
 import sys
@@ -22,30 +23,7 @@ SYS_PTRACE = 101  # Syscall number for ptrace
 # Load the C standard library
 libc = ctypes.CDLL(ctypes.util.find_library('c'))
 
-# Define BPF structures and constants for seccomp filters
-class SockFilter(ctypes.Structure):
-    """Represents a single filter instruction for seccomp."""
-    _fields_ = [
-        ("code", ctypes.c_ushort),
-        ("jt", ctypes.c_ubyte),
-        ("jf", ctypes.c_ubyte),
-        ("k", ctypes.c_uint32)
-    ]
 
-    def __iter__(self):
-        for field_name, _ in self._fields_:
-            yield getattr(self, field_name)
-
-class SockFprog(ctypes.Structure):
-    """Represents a set of seccomp filter instructions."""
-    _fields_ = [
-        ("len", ctypes.c_ushort),
-        ("filter", ctypes.POINTER(SockFilter))
-    ]
-
-    def __iter__(self):
-        for field_name, _ in self._fields_:
-            yield getattr(self, field_name)
 
 def ptrace(request, pid, addr, data):
     """Wrapper for ptrace syscall to interact with a process."""
@@ -57,6 +35,15 @@ def ptrace(request, pid, addr, data):
         print(f"Error PTRACE'ing the process {pid}. Are you sure you have the right permissions?")
     return result
 
+def get_default_seccomp():
+    no_instructions = len(RUNTIMEDEFAULT)
+    disassembler = BPFDisassembler()
+    disassembled_filters = disassembler.disassemble(RUNTIMEDEFAULT)
+    # Generate a syscall summary
+    disassembler.syscallSummary["total"] = {"count": no_instructions}
+    return disassembled_filters, disassembler
+
+    
 def get_seccomp_filters(pid):
     """Retrieve seccomp filters applied to the process with the given PID."""
     # Attach to the target process

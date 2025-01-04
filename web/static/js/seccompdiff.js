@@ -17,44 +17,62 @@ async function listContainers() {
 
         allContainers = data.containers || [];
         updateNamespaceFilter();
-        renderContainers(allContainers);
+        const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
+        const filteredContainers = allContainers.filter(container => container.name.toLowerCase().includes(nameFilter));
+        renderContainers(filteredContainers);
+        
     } catch (error) {
         console.error("Error occurred while listing containers:", error);
         alert(`Error: ${error.message}`);
     }
+    
 }
 
-async function runSeccompDiff() {
+function isValidJson(str) {
     try {
-        console.log("Running seccomp diff...");
+        JSON.parse(str);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
 
-        const reduce = configState.get("reduce");
-        const only_diff = configState.get("only_diff");
-        const only_dangerous = configState.get("only_dangerous");
+async function runDefaultDiff() {
+    console.log("Running default diff...");
 
-        console.log(`"only_dangerous" set to`, configState.get("only_dangerous")); // Debug output
+    const reduce = configState.get("reduce");
+    const only_diff = configState.get("only_diff");
+    const only_dangerous = configState.get("only_dangerous");
 
-        const response = await fetch('/run_seccomp_diff', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                containers: selectedContainers,
-                reduce: reduce, 
-                only_diff: only_diff,
-                only_dangerous: only_dangerous
-             })
-        });
+    console.log(selectedContainers);
 
-        if (!response.ok) {
-            throw new Error(`Error running seccomp diff: ${response.statusText}`);
-        }
 
-        const data = await response.json();
-        console.log("Seccomp diff result:", data);
+    const response = await fetch('/run_seccomp_diff', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+            containers: [selectedContainers[0], "default"],
+            reduce: reduce, 
+            only_diff: only_diff,
+            only_dangerous: only_dangerous
+         })
+    });
 
-        const outputElem = document.getElementById('output');
+    if (!response.ok) {
+        throw new Error(`Error running seccomp diff: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("Seccomp diff result:", data);
+
+    fillDiffTable(data);
+
+}
+
+async function fillDiffTable(data) {
+    const outputElem = document.getElementById('output');
         outputElem.innerHTML = ''; // Clear previous output
 
         if (data.output) {
@@ -78,7 +96,7 @@ async function runSeccompDiff() {
                 if (full[col] != null && Array.isArray(full[col])){
                     formattedContent[col] = full[col].map(line => `<div>${line}</div>`).join('');
                     th.style.cursor = "pointer";
-                    console.log(`Formatted content for ${headerText}:`, formattedContent[col]);
+                    
                     th.onclick = () => {
                         if (formattedContent[col]) {
                             showModal(`<pre>${formattedContent[col]}</pre>`);
@@ -118,20 +136,37 @@ async function runSeccompDiff() {
                         td.textContent = cell;
                     }
 
-                    // Handle JSON in the second row
-                    if (rowIndex === 0 && isValidJson(cell)) {
-                        const jsonContent = JSON.parse(cell);
-                        const prettyJson = JSON.stringify(jsonContent, null, 2);
-                        const lines = prettyJson.split('\n');
+                    // Handle JSON in the seccomp row
+                    if (rowIndex === 0 && index !== 0){
+                        if (isValidJson(cell)){
+                        
+                            const jsonContent = JSON.parse(cell);
+                            const prettyJson = JSON.stringify(jsonContent, null, 2);
+                            const lines = prettyJson.split('\n');
+                            
+                            if (lines.length > 5) {
+                                const truncated = lines.slice(0, 5).join('\n') + '\n...';
+                                td.innerHTML = `<pre class="json-truncated">${truncated}<span class="ellipsis">More</span></pre>`;
+                                td.style.cursor = "pointer";
+                                td.onclick = () => showModal(`<pre>${prettyJson}</pre>`);
+                            } else {
+                                td.innerHTML = `<pre>${prettyJson}</pre>`;
+                            }
+                        } else { 
+                            td.innerHTML = `<pre>${cell}</pre>`;}
+                        } else if (rowIndex === 1 && index !== 0 && cell !== null){
+                            const fullcaps = cell;
+                            const lines = cell.split('\n');
+                            
+                            if (lines.length > 5) {
+                                const truncated = lines.slice(0, 5).join('\n') + '\n...';
+                                td.innerHTML = `<pre class="json-truncated">${truncated}<span class="ellipsis">More</span></pre>`;
+                                td.style.cursor = "pointer";
+                                td.onclick = () => showModal(`<pre>${fullcaps}</pre>`);
+                            } else {
+                                td.innerHTML = `<pre>${fullcaps}</pre>`;
+                            }
 
-                        if (lines.length > 5) {
-                            const truncated = lines.slice(0, 5).join('\n') + '\n...';
-                            td.innerHTML = `<pre class="json-truncated">${truncated}<span class="ellipsis">More</span></pre>`;
-                            td.style.cursor = "pointer";
-                            td.onclick = () => showModal(`<pre>${prettyJson}</pre>`);
-                        } else {
-                            td.innerHTML = `<pre>${prettyJson}</pre>`;
-                        }
                     } else if (index === 0 && rowIndex > 1) { // First column (Syscall) with modal for tooltip, skipping first two rows
                         const emojiMatch = cell && cell.match(/:(\w+):/g);
                         let inject = '';
@@ -181,6 +216,43 @@ async function runSeccompDiff() {
             console.error("Error data from server:", data);
             outputElem.textContent = `Error: ${data.error}`;
         }
+    
+}
+
+
+async function runSeccompDiff() {
+    try {
+        console.log("Running seccomp diff...");
+
+        const reduce = configState.get("reduce");
+        const only_diff = configState.get("only_diff");
+        const only_dangerous = configState.get("only_dangerous");
+
+        console.log(`"only_dangerous" set to`, configState.get("only_dangerous")); // Debug output
+
+        const response = await fetch('/run_seccomp_diff', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                containers: selectedContainers,
+                reduce: reduce, 
+                only_diff: only_diff,
+                only_dangerous: only_dangerous
+             })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error running seccomp diff: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("Seccomp diff result:", data);
+
+        fillDiffTable(data);
+
+        
     } catch (error) {
         console.error("Error occurred while running seccomp diff:", error);
         alert(`Error: ${error.message}`);

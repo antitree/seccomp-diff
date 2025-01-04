@@ -1,4 +1,5 @@
-from common.ptrace import get_seccomp_filters
+import json
+from common.ptrace import get_seccomp_filters, get_default_seccomp
 from common.output import CustomTable as Table
 from lib.syscalls.x86_64 import syscall_dict as SYSCALLS
 from rich.console import Console
@@ -49,49 +50,25 @@ def is_convertible_to_int(s):
     except ValueError:
         return False
 
-def get_seccomp_policy(container):
-    """Get the seccomp policy and return a detailed table for every syscall."""
-    try:
-        full, d = get_seccomp_filters(container["pid"])
-        if d:
-            container["summary"] = d.syscallSummary
-        else:
-            container["summary"] = {}
-
-        default_action = d.defaultAction if d else "unknown"
-
-        console = Console()
-        table = Table(show_header=True, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)
-        table.add_column(header="Syscall", justify="left", min_width=20)
-        table.add_column(header=f"{container['name']} Action", justify="left", min_width=20)
-
-        # Iterate through all syscalls in SYSCALLS
-        for syscall_num, syscall_info in SYSCALLS.items():
-            syscall_name = syscall_info[1]
-
-            # Get the action for this syscall from the container's summary, or default to the default action
-            if syscall_name in container["summary"]:
-                action = container["summary"][syscall_name].get("action", default_action)
-            else:
-                action = default_action
-
-            table.add_custom_row(syscall_name, action)
-
-        return table, full
-
-    except Exception as e:
-        console.print(f"An error occurred: {e}", style="bold red")
-        return None, None
+   
 
 def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True, only_dangerous=False):
     """Compare the seccomp policies of two containers and return a detailed table."""
     
     danger_style = Style(color="red", blink=True, bold=True)
-
     
     try:
         full1, d1 = get_seccomp_filters(container1["pid"])
-        full2, d2 = get_seccomp_filters(container2["pid"])
+        if container2 == "default":
+            full2, d2 = get_default_seccomp()
+            container2 = {
+                "pid": None, 
+                "name": "RuntimeDefault",
+                "seccomp": "", 
+                "caps": "",
+                }
+        else: 
+            full2, d2 = get_seccomp_filters(container2["pid"])
 
         if d1:
             container1["summary"] = d1.syscallSummary
@@ -113,8 +90,8 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         table.add_column(header=f"{container2['name']} Action", justify="left", min_width=20)
         
         # Add Seccomp and Capabilities Information
-        table.add_custom_row("[b]seccomp", container1["seccomp"])
-        table.add_custom_row("[b]caps", container1["caps"], end_section=True)
+        table.add_custom_row("[b]seccomp", container1["seccomp"], container2["seccomp"])
+        table.add_custom_row("[b]caps", container1["caps"], container2["caps"], end_section=True)
         
 
         # Iterate through all syscalls in SYSCALLS
@@ -154,7 +131,7 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
             table.add_custom_row(syscall_name, action1, action2)
         
     except Exception as e:
-        console.print(f"An error occurred: {e}", style="bold red")
+        print(f"An error occurred: {e}")
         return None, None, None
             
     # Add total instructions row

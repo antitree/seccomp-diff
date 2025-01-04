@@ -77,7 +77,7 @@ h1, h2, h3 {
 
 .icon-toggle {
     cursor: pointer;
-    font-size: 20px;
+    font-size: 40px;
     margin-left: 10px;
 }
 .icon-enabled {
@@ -132,7 +132,20 @@ h1, h2, h3 {
     display: inline-block;
 }
 
-.tooltip-container .tooltip-text {
+#mode-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+  }
+  
+  #modeIcon {
+    margin-right: 10px; /* Adds spacing between the icon and the select box */
+  }
+  
+  
+  
+
+.tooltip-container .tooltip-text, .containers .tooltip-text {
     visibility: hidden;
     background-color: black;
     color: white;
@@ -146,12 +159,12 @@ h1, h2, h3 {
     z-index: 1;
     opacity: 0;
     transition: opacity 0.3s;   
-    width: 200px;
+    width: 300px;
     word-wrap: break-word;
 
 }
 
-.tooltip-container:hover .tooltip-text {
+.tooltip-container:hover .tooltip-text, .containers:hover .tooltip-text {
     visibility: visible;
     opacity: 1;
 }
@@ -191,9 +204,18 @@ a:hover {
     background-color: #f9f9f9;
     border: 1px solid #ccc;
     padding: 10px;
-    width: 200px;
+    width: 400px;
     border-radius: 5px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#containerList, #containerOutput {
+    display: none;
+}
+
+.summary{
+    width: 50%;
+    margin: 0 auto;
 }
 
 .hidden {
@@ -211,6 +233,7 @@ a:hover {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+    width: 300px;
 }
 
 

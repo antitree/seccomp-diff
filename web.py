@@ -1,4 +1,4 @@
-from common.diff import compare_seccomp_policies, get_seccomp_policy
+from common.diff import compare_seccomp_policies
 from common import containerd
 from common import docker
 from flask import Flask, render_template, render_template_string, request, jsonify, send_from_directory, abort
@@ -147,6 +147,8 @@ def update_config():
         app.logger.warning(data["debug"])    
     return jsonify({"status": "success"})
 
+    
+
 @app.route('/run_seccomp_diff', methods=['POST'])
 def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
     """Run the seccomp_diff function with selected container details."""
@@ -185,20 +187,6 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
     except ValueError as e:
         return jsonify({"diff error": str(e)}), 500
     
-@app.route('/get_container', methods=['POST'])
-def get_container():
-    """Fetch details for a single container."""
-    container = request.json.get('container')
-    if not container:
-        return jsonify({"error": "Please select a container."}), 400
-
-    try:
-        container = get_seccomp_policy(container)
-
-        return jsonify({"details": container_details})
-    except Exception as e:
-        app.logger.error(f"Error fetching container details: {e}")
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.debug = True
