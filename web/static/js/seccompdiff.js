@@ -224,6 +224,10 @@ async function runSeccompDiff() {
     try {
         console.log("Running seccomp diff...");
 
+        if (selectedContainers.length !== 2){
+            throw new Error(`You haven't selected enough containers to compare`);
+        }
+
         const reduce = configState.get("reduce");
         const only_diff = configState.get("only_diff");
         const only_dangerous = configState.get("only_dangerous");
