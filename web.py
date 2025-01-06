@@ -58,7 +58,11 @@ def table_to_json(table, full1=None, full2=None):
     """
     headers = [column.header for column in table.columns]
     rows = [[cell.text for cell in row] for row in table._custom_rows]
-    #app.logger.debug(f"Headers: {headers}")
+    if full1 == full2:
+        app.logger.debug(f"ROWS: {rows}")
+        same = ['', "Policies appear to be the same","Policies appear to be the same" ]
+        rows.append(same)
+        
     
     # app.logger.error(full1)
     return json.dumps({"headers": headers, "rows": rows, "full": [full1, full2]})

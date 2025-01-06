@@ -240,8 +240,13 @@ class BPFDisassembler(BPFDecoder):
             
             if self.current == "SYSCALL":
                 action = self.resolve_action(actionno)
+                # When the action is the same as the defaultAction its likely
+                # not explicitally setting an if/then/else so don't show it
+                # as such
                 if actionf: 
                     actionf = self.resolve_action(actionnof)
+                    if actionf == self.defaultAction:
+                        actionf = ""
                 
                 
                 # If it's a  syscall we know about
@@ -256,8 +261,25 @@ class BPFDisassembler(BPFDecoder):
             
             return h, action, actionf
         
+    def _action_format(self, action):
+        if action == None:
+            return action
+        
+        if ": " in action:
+            print(action)
+            action = action.split(": ")[1]
+            print(action)
+            return action
+        
+            
+            
+        
+        return action
+        
     def add_to_syscall_summary(self, h, actiont, actionf=None):
         """Add the action to the system call summary"""
+        actiont = self._action_format(actiont)
+        actionf = self._action_format(actionf)
         action = None
         if actionf:
             action = f"{actiont}/{actionf}"
@@ -292,7 +314,6 @@ class BPFDisassembler(BPFDecoder):
         
         if "RETURN" in follow_s:
             follow_s = follow_s.split()[1]
-
             return follow_s
         elif "IF SYSCALL " in follow_s and "ALLOW" in follow_s:
             op = follow_s.split("IF SYSCALL ")[1]
@@ -376,6 +397,7 @@ class BPFDisassembler(BPFDecoder):
             elif k == 0:    self.current = "SYSCALL"
             elif k >= 0x10:   
                 arg_no = k - 16
+                print(arg_no)
                 if self.last: 
                     last = self.last
                 else: last = None
@@ -456,7 +478,7 @@ class BPFDisassembler(BPFDecoder):
         act = k >> 16
         if act == 5: #error
             n = k & 0xFF
-            h = f"ERRORNO({n})"
+            h = f"ERRNO({n})"
             self.action = h
         elif act == 0x7fff:
             n = 0
@@ -536,7 +558,8 @@ class BPFDisassembler(BPFDecoder):
         actionnof = pc+1+jf
                     
         h, actiont, actionf = self.filter_to_human(k, actionnot, actionnof)        
-        
+        if actionf == None:
+            return f"IF {self.current} == {h} then {actiont}"    
         return f"IF {self.current} == {h} then {actiont} else {actionf}"
     def op_jmp_set_k(self, jt, jf, k):
         if jf == 0:
