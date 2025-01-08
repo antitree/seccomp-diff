@@ -30,7 +30,7 @@ class BPFInvalidOpcode(Exception):
 
 class BPFDecoder(BPFConstants):
     def __init__(self):
-        self.current = None
+        self.current = "A"
         self.last = None
         self.action = None
 
@@ -236,7 +236,7 @@ class BPFDisassembler(BPFDecoder):
                     h = ARCHS[k]
                     self.arch = h
                     return h, actionno, actionnof
-            self.current = "SYSCALL" ## TODO hack. Is there a better check?
+            #self.current = "SYSCALL" ## TODO hack. Is there a better check?
             
             if self.current == "SYSCALL":
                 action = self.resolve_action(actionno)
@@ -316,7 +316,12 @@ class BPFDisassembler(BPFDecoder):
             follow_s = follow_s.split()[1]
             return follow_s
         elif "IF SYSCALL " in follow_s and "ALLOW" in follow_s:
-            op = follow_s.split("IF SYSCALL ")[1]
+            # op = follow_s.split("IF SYSCALL ")[1]
+            # if " " in op
+            # TODO HACK
+            # There are complicated results when ranges are involved
+            # this skips that and just calls it conditional
+            return "CONDITION"
             return f"{op}"
         else:
             logging.info(f"ERROR: the jump is not a return! {follow_s}")
@@ -397,14 +402,13 @@ class BPFDisassembler(BPFDecoder):
             elif k == 0:    self.current = "SYSCALL"
             elif k >= 0x10:   
                 arg_no = k - 16
-                print(arg_no)
                 if self.last: 
                     last = self.last
                 else: last = None
                 if last in SYSCALLS:
                     last = SYSCALLS[last][1]
                 self.current = f"{last} ARGS[{arg_no}]"
-            else:           self.current = "UNKNOWNYOLO"
+            else:           self.current = "UNKNOWN"
             return f"A = [{k}]({self.current})"
 
     def op_set_a_ind(self, k, size):
@@ -558,9 +562,9 @@ class BPFDisassembler(BPFDecoder):
         actionnof = pc+1+jf
                     
         h, actiont, actionf = self.filter_to_human(k, actionnot, actionnof)        
-        if actionf == None:
+        if actionf == None or actionf == "":
             return f"IF {self.current} == {h} then {actiont}"    
-        return f"IF {self.current} == {h} then {actiont} else {actionf}"
+        return f"IF {self.current} == {h} then {actiont} else {actionf}FUCK"
     def op_jmp_set_k(self, jt, jf, k):
         if jf == 0:
             return "jset #0x%x, l%d" % (k, self.pc+1+jt)

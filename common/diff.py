@@ -32,6 +32,7 @@ def reduce_action(action):
         "KILL": DENY,
         "TRACE": CONDITION,
         "TRAP": CONDITION,
+        "CONDITION": CONDITION,
         "Unknown": UNKNOWN,
     }
     # Check error numbers
@@ -39,7 +40,7 @@ def reduce_action(action):
         return DENY
     elif "/" in action and action != "N/A":
         return CONDITION
-    return ACTION_MAP.get(action, f"ERROR MAPPING EFFECTIVE PERMISSIONS {action}")
+    return ACTION_MAP.get(action, [f"FERROR MAPPING EFFECTIVE PERMISSIONS {action}"])
     
 
 def is_convertible_to_int(s):
