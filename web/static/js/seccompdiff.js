@@ -87,8 +87,11 @@ async function fillDiffTable(data) {
             const headerRow = document.createElement('tr');
             headers.forEach((headerText, index) => {
                 const th = document.createElement('th');
+                if (index != 0){
+                th.innerHTML = headerText + '<i class="bi bi-caret-right-fill"></i>';
+                } else {
                 th.textContent = headerText;
-                
+                }
                 
                 //const fullContent = full && full[index] ? full[index] : null;
                 const formattedContent = [];
@@ -101,13 +104,16 @@ async function fillDiffTable(data) {
                         if (formattedContent[col]) {
                             showModal(`<pre>${formattedContent[col]}</pre>`);
                         } else {
-                            showModal("No content available for this header.");
+                            showModal("No content available for this.");
                         }
                     };
                 }
                 headerRow.appendChild(th);
             });
             table.appendChild(headerRow);
+
+            let prettySeccompJson = '';
+            let seccompTitle = "<strong>seccomp</strong>"; 
 
             // Add table rows
             rows.forEach((row, rowIndex) => {
@@ -136,38 +142,57 @@ async function fillDiffTable(data) {
                         td.textContent = cell;
                     }
 
-                    // Handle JSON in the seccomp row
-                    if (rowIndex === 0 && index !== 0){
-                        if (isValidJson(cell)){
-                        
-                            const jsonContent = JSON.parse(cell);
-                            const prettyJson = JSON.stringify(jsonContent, null, 2);
-                            const lines = prettyJson.split('\n');
-                            
-                            if (lines.length > 5) {
-                                const truncated = lines.slice(0, 5).join('\n') + '\n...';
-                                td.innerHTML = `<pre class="json-truncated">${truncated}<span class="ellipsis">More</span></pre>`;
-                                td.style.cursor = "pointer";
-                                td.onclick = () => showModal(`<pre>${prettyJson}</pre>`);
-                            } else {
-                                td.innerHTML = `<pre>${prettyJson}</pre>`;
-                            }
-                        } else { 
-                            td.innerHTML = `<pre>${cell}</pre>`;}
-                        } else if (rowIndex === 1 && index !== 0 && cell !== null){
-                            const fullcaps = cell;
-                            const lines = cell.split('\n');
-                            
-                            if (lines.length > 5) {
-                                const truncated = lines.slice(0, 5).join('\n') + '\n...';
-                                td.innerHTML = `<pre class="json-truncated">${truncated}<span class="ellipsis">More</span></pre>`;
-                                td.style.cursor = "pointer";
-                                td.onclick = () => showModal(`<pre>${fullcaps}</pre>`);
-                            } else {
-                                td.innerHTML = `<pre>${fullcaps}</pre>`;
-                            }
+                    
+                    
+                    
+                    // Handle JSON in the SECCOMP row
+                    
 
-                    } else if (index === 0 && rowIndex > 2) { // First column (Syscall) with modal for tooltip, skipping first two rows
+                    if (rowIndex === 0 && index !== 0) {
+                        // SECCOMP row
+                        if (isValidJson(cell)) {
+                            const jsonContent = JSON.parse(cell);
+                            prettySeccompJson = JSON.stringify(jsonContent, null, 2);
+                        } else {
+                            prettySeccompJson = null;
+                        }
+                        
+                        return;
+                    } else if (rowIndex === 1 && index == 0){
+                        td.innerHTML = seccompTitle;
+                    }
+
+                    // Handle TOTALS row
+                    else if (rowIndex === 1 && index !== 0) {
+                        const size = Number(cell);
+
+                        if (size > 0 && !(prettySeccompJson === null) && !(prettySeccompJson.includes("efault"))) {
+                            //alert(prettySeccompJson);
+                            td.style.cursor = "pointer";
+                            td.onclick = () => showModal(`<pre>${prettySeccompJson}</pre>`);
+                            td.innerHTML = `${cell} Instructions <i class="bi bi-caret-right-fill highlight"></i>`;
+                        } else {
+                            td.textContent = `${cell} Instructions`;
+                        }
+                    }
+
+                    // Handle CAPABILITIES row
+                    else if (rowIndex === 2 && index !== 0 && cell !== null) {
+                        const fullCaps = cell;
+                        const lines = cell.split('\n');
+
+                        if (lines.length > 5) {
+                            const truncated = lines.slice(0, 5).join('\n') + '\n...';
+                            td.innerHTML = `<pre class="json-truncated">${truncated}<span class="ellipsis">More</span></pre>`;
+                            td.style.cursor = "pointer";
+                            td.onclick = () => showModal(`<pre>${fullCaps}</pre>`);
+                        } else {
+                            td.innerHTML = `<pre>${fullCaps}</pre>`;
+                        }
+                    
+
+
+                    } else if (index === 0 && rowIndex > 4) { // First column (Syscall) with modal for tooltip, skipping first two rows
                         const emojiMatch = cell && cell.match(/:(\w+):/g);
                         let inject = '';
                         if (emojiMatch) {
@@ -205,8 +230,13 @@ async function fillDiffTable(data) {
                         td.appendChild(link);
                         
                     }
-
+                    // HACK
+                    // TODO 
+                    // if td.innerHTML.includes("eccomp")
+                    if (td.innerHTML === "<strong>seccomp</strong>")
+                        return;
                     tr.appendChild(td);
+
                 });
                 table.appendChild(tr);
             });

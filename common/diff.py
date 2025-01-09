@@ -92,6 +92,12 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         
         # Add Seccomp and Capabilities Information
         table.add_custom_row("[b]seccomp", container1["seccomp"], container2["seccomp"])
+        # Add total instructions row
+        container1["total"] = container1["summary"].get("total", {"count": 0}).get("count")
+        container2["total"] = container2["summary"].get("total", {"count": 0}).get("count")
+        table.add_custom_row("[b]total", str(container1["total"]), str(container2["total"]))
+        
+        
         table.add_custom_row("[b]caps", container1["caps"], container2["caps"])
         table.add_custom_row("[b]pid", str(container1["pid"]), str(container2["pid"]), end_section=True)
         table.add_custom_row("[b]system calls", "", "")
@@ -137,10 +143,7 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         print(f"An error occurred: {e}")
         return None, None, None
             
-    # Add total instructions row
-    container1["total"] = container1["summary"].get("total", {"count": 0}).get("count")
-    container2["total"] = container2["summary"].get("total", {"count": 0}).get("count")
-    table.add_custom_row("Total Instructions", str(container1["total"]), str(container2["total"]))
+    
     if len(table.rows) <= 3 and container1["total"] == container2["total"]:
         console.print(Text("No seccomp filter differences were found between the two containers", justify="center"))
 
