@@ -102,7 +102,7 @@ def get_containers(containerd_socket="/run/containerd/containerd.sock", namespac
         if labels and "io.kubernetes.container.name" in labels:
             name = str(labels["io.kubernetes.container.name"])
         elif "io.kubernetes.pod.name" in labels: 
-            name = str(labels["io.kubernetes.pod.name"])
+            name = str(labels["io.kubernetes.pod.name"])        
         
         if "io.kubernetes.pod.namespace" in labels: 
             container_namespace = str(labels["io.kubernetes.pod.namespace"])
@@ -120,15 +120,18 @@ def get_containers(containerd_socket="/run/containerd/containerd.sock", namespac
         # get container image
         image = get_container_image(containerd_socket, container_id, namespace=namespace)
         
-        seccomp_info = "unknown"
+        seccomp_info = "unconfined"
         capabilities = []
+        cmd = []
         if container.spec:
             spec_json = json.loads(container.spec.value)
             if "linux" in spec_json and "seccomp" in spec_json["linux"]:
                 seccomp_info = spec_json["linux"]["seccomp"]
             if "process" in spec_json and "capabilities" in spec_json["process"] and "permitted" in spec_json["process"]["capabilities"]:
                 capabilities = spec_json["process"]["capabilities"]["permitted"]
-                
+                if "args" in spec_json["process"]:
+                    cmd = spec_json["process"]["args"]
+
         # CONFIG: Only return profiles with seccomp profiles
         if with_seccomp and not seccomp_info:
             continue
@@ -137,6 +140,7 @@ def get_containers(containerd_socket="/run/containerd/containerd.sock", namespac
             "id": container_id,
             "name": name,
             "runtime": runtime,
+            "cmd": "\n".join(cmd),
             "seccomp": json.dumps(seccomp_info),
             "image": image,
             "pid": pid,

@@ -1,0 +1,46 @@
+{
+	"defaultAction": "SCMP_ACT_LOG",
+	"architectures": [
+		"SCMP_ARCH_X86_64"
+	],
+	"syscalls": [
+		{
+			"names": [
+				"ptrace",
+				"bpf",
+				"reboot",
+				"delete_module"
+			],
+			"action": "SCMP_ACT_ERRNO",
+			"errnoRet": 1
+		},
+		{
+			"names": [
+				"mount",
+				"umount2",
+				"pivot_root",
+				"unshare"
+			],
+			"action": "SCMP_ACT_ERRNO",
+			"errnoRet": 1
+		},
+		{
+			"names": [
+				"socket",
+				"bind",
+				"connect",
+				"setsockopt",
+				"getsockopt",
+				"listen",
+				"accept",
+				"accept4"
+			],
+			"action": "SCMP_ACT_ALLOW",
+			"includes": {
+				"caps": [
+					"CAP_NET_ADMIN"
+				]
+			}
+		}
+	]
+}

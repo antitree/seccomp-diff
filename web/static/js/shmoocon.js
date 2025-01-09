@@ -67,6 +67,10 @@ function renderContainers(containers) {
                 textParts.push(`Image: ${container.image}`);
             }
 
+            if (container.cmd) {
+                textParts.push(`Command: ${container.cmd}`);
+            }
+
             // Add namespace if it exists
             if (container.namespace) {
                 textParts.push(`Namespace: ${container.namespace}`);

@@ -16,6 +16,9 @@ def get_containers(with_seccomp = False):
             containers[dc.name]["pid"] = pid
             host_config = details.get("HostConfig", {})
             config = details.get("Config", {})
+            cmd = config.get("Entrypoint")
+            if cmd and len(cmd) > 0:
+                containers[dc.name]["cmd"] = cmd
             
             # Check the seccomp status from the container's HostConfig
             security_opts = host_config.get("SecurityOpt", [])

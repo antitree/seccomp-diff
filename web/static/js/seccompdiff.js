@@ -167,7 +167,7 @@ async function fillDiffTable(data) {
                                 td.innerHTML = `<pre>${fullcaps}</pre>`;
                             }
 
-                    } else if (index === 0 && rowIndex > 1) { // First column (Syscall) with modal for tooltip, skipping first two rows
+                    } else if (index === 0 && rowIndex > 2) { // First column (Syscall) with modal for tooltip, skipping first two rows
                         const emojiMatch = cell && cell.match(/:(\w+):/g);
                         let inject = '';
                         if (emojiMatch) {

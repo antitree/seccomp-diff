@@ -182,7 +182,7 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
             only_diff=only_diff,
             only_dangerous=only_dangerous,
             )
-        app.logger.debug(f"Reduce: {reduce}, only_diff: {only_diff}, only_dangerous: {only_dangerous}")
+        #app.logger.debug(f"Reduce: {reduce}, only_diff: {only_diff}, only_dangerous: {only_dangerous}")
         
         
         # Convert the table to JSON

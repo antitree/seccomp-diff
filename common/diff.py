@@ -92,8 +92,9 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         
         # Add Seccomp and Capabilities Information
         table.add_custom_row("[b]seccomp", container1["seccomp"], container2["seccomp"])
-        table.add_custom_row("[b]caps", container1["caps"], container2["caps"], end_section=True)
-        table.add_custom_row("System Calls", "", "")
+        table.add_custom_row("[b]caps", container1["caps"], container2["caps"])
+        table.add_custom_row("[b]pid", str(container1["pid"]), str(container2["pid"]), end_section=True)
+        table.add_custom_row("[b]system calls", "", "")
         
 
         # Iterate through all syscalls in SYSCALLS

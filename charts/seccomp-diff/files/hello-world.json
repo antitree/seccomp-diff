@@ -1,0 +1,48 @@
+{
+	"defaultAction": "SCMP_ACT_ERRNO",
+	"architectures": [
+		"SCMP_ARCH_X86_64"
+	],
+	"syscalls": [
+		{
+			"names": [
+				"futex",
+				"rt_sigaction",
+				"rt_sigprocmask",
+				"mmap",
+				"clone3",
+				"rt_sigreturn",
+				"mprotect",
+				"fcntl",
+				"newfstatat",
+				"read",
+				"sigaltstack",
+				"madvise",
+				"close",
+				"statfs",
+				"gettid",
+				"getrlimit",
+				"getpid",
+				"fstat",
+				"munmap",
+				"brk",
+				"pread64",
+				"access",
+				"execve",
+				"arch_prctl",
+				"sched_getaffinity",
+				"set_tid_address",
+				"epoll_ctl",
+				"openat",
+				"readlinkat",
+				"set_robust_list",
+				"epoll_create1",
+				"pipe2",
+				"prlimit64",
+				"getrandom",
+				"rseq"
+			],
+			"action": "SCMP_ACT_ALLOW"
+		}
+	]
+}

@@ -8,6 +8,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libseccomp-dev \
+    vim \
+    containerd \ 
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for caching

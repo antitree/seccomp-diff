@@ -1,0 +1,29 @@
+{
+	"defaultAction": "SCMP_ACT_LOG",
+	"architectures": [
+		"SCMP_ARCH_X86_64"
+	],
+	"syscalls": [
+		{
+			"names": [
+				"mount",
+				"umount2",
+				"pivot_root",
+				"unshare",
+				"settimeofday"
+			],
+			"action": "SCMP_ACT_ERRNO",
+			"errnoRet": 1
+		},
+		{
+			"names": [
+				"mlockall",
+				"modify_ldt",
+				"iopl",
+				"ioperm"
+			],
+			"action": "SCMP_ACT_ERRNO",
+			"errnoRet": 1
+		}
+	]
+}

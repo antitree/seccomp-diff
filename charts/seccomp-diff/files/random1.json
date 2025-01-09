@@ -1,0 +1,28 @@
+{
+	"defaultAction": "SCMP_ACT_LOG",
+	"architectures": [
+		"SCMP_ARCH_X86_64"
+	],
+	"syscalls": [
+		{
+			"names": [
+				"ptrace",
+				"bpf",
+				"reboot",
+				"chroot",
+				"setns"
+			],
+			"action": "SCMP_ACT_ERRNO",
+			"errnoRet": 99
+		},
+		{
+			"names": [
+				"perf_event_open",
+				"init_module",
+				"delete_module"
+			],
+			"action": "SCMP_ACT_ERRNO",
+			"errnoRet": 42
+		}
+	]
+}
