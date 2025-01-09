@@ -5,6 +5,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
     name: {{ .name }}
+    namespace: {{ .Values.namespace }}  # Dynamically set the namespace
     labels:
       app: {{ .name }}
 spec:
@@ -17,6 +18,16 @@ spec:
       labels:
         app: {{ .name }}
     spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - {{ .name }}
+            topologyKey: "kubernetes.io/hostname"
       containers:
       - name: {{ .name }}
         image: {{ .image }}

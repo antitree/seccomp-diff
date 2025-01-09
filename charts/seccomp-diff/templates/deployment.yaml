@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: seccomp-diff
+  namespace: {{ .Values.namespace }}  # Dynamically set the namespace
   labels:
     app: seccomp-diff
 spec:
@@ -15,6 +16,16 @@ spec:
         app: seccomp-diff
     spec:
       hostPID: true
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - seccomp-diff
+            topologyKey: "kubernetes.io/hostname"
       containers:
       - name: seccomp-diff
         resources:

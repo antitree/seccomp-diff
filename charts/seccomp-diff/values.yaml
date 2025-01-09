@@ -1,4 +1,4 @@
-namespace: default
+namespace: seccomp-diff
 
 image:
   repository: antitree/seccomp-diff
