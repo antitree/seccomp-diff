@@ -86,13 +86,14 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
 
         console = Console()
         table = Table(show_header=True, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)
-        table.add_column(header="Syscall", justify="left", min_width=20)
-        table.add_column(header=f"{container1['name']} Action", justify="left", min_width=20)
-        table.add_column(header=f"{container2['name']} Action", justify="left", min_width=20)
+        table.add_column(header="Container:", justify="left", min_width=20)
+        table.add_column(header=f"{container1['name']}", justify="left", min_width=20)
+        table.add_column(header=f"{container2['name']}", justify="left", min_width=20)
         
         # Add Seccomp and Capabilities Information
         table.add_custom_row("[b]seccomp", container1["seccomp"], container2["seccomp"])
         table.add_custom_row("[b]caps", container1["caps"], container2["caps"], end_section=True)
+        table.add_custom_row("System Calls", "", "")
         
 
         # Iterate through all syscalls in SYSCALLS
