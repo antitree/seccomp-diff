@@ -98,7 +98,20 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         table.add_custom_row("[b]total", str(container1["total"]), str(container2["total"]))
         
         
-        table.add_custom_row("[b]caps", container1["caps"], container2["caps"])
+        cap1 = container1.get("capabilities", [])
+        cap2 = container2.get("capabilities", [])
+
+        # Convert None to an empty set if needed
+        cap_diff_str = "No capabilities differences"
+        cap1 = set(cap1) if cap1 else set()
+        cap2 = set(cap2) if cap2 else set()
+
+        if only_diff:
+            cap1 = cap1.difference(cap2)  # Items only in cap1
+            cap2 = cap2.difference(cap1)  # Items only in cap2
+            
+
+        table.add_custom_row("[b]caps", "\n".join(cap1), "\n".join(cap2))
         table.add_custom_row("[b]pid", str(container1["pid"]), str(container2["pid"]), end_section=True)
         table.add_custom_row("[b]system calls", "", "")
         

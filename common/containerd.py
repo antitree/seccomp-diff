@@ -17,6 +17,23 @@ import argparse
 import json
 ENV = "k8s"
 
+DEFAULT_CAPABILITIES = [
+    "CAP_AUDIT_WRITE",
+    "CAP_CHOWN",
+    "CAP_DAC_OVERRIDE",
+    "CAP_FOWNER",
+    "CAP_FSETID",
+    "CAP_KILL",
+    "CAP_MKNOD",
+    "CAP_NET_BIND_SERVICE",
+    "CAP_NET_RAW",
+    "CAP_SETFCAP",
+    "CAP_SETGID",
+    "CAP_SETPCAP",
+    "CAP_SETUID",
+    "CAP_SYS_CHROOT",
+]
+
 def list_namespaces(containerd_socket):
     """
     List available namespaces in containerd.

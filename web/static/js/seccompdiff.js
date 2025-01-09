@@ -113,7 +113,9 @@ async function fillDiffTable(data) {
             table.appendChild(headerRow);
 
             let prettySeccompJson = '';
-            let seccompTitle = "<strong>seccomp</strong>"; 
+            // SUCH a hack. So sad. 
+            // TODO
+            let seccompTitle = "<strong>seccomp profile</strong>"; 
 
             // Add table rows
             rows.forEach((row, rowIndex) => {
@@ -153,8 +155,6 @@ async function fillDiffTable(data) {
                         if (isValidJson(cell)) {
                             const jsonContent = JSON.parse(cell);
                             prettySeccompJson = JSON.stringify(jsonContent, null, 2);
-                        } else {
-                            prettySeccompJson = null;
                         }
                         
                         return;
@@ -166,7 +166,7 @@ async function fillDiffTable(data) {
                     else if (rowIndex === 1 && index !== 0) {
                         const size = Number(cell);
 
-                        if (size > 0 && !(prettySeccompJson === null) && !(prettySeccompJson.includes("efault"))) {
+                        if (size > 0 && !(prettySeccompJson === null) && !(prettySeccompJson === "Runtime Default")) {
                             //alert(prettySeccompJson);
                             td.style.cursor = "pointer";
                             td.onclick = () => showModal(`<pre>${prettySeccompJson}</pre>`);
