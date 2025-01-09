@@ -11,17 +11,28 @@
 </head>
 <body>
     <div class="header text-center py-3">
-        
         <h1>Seccomp-Diff</h1>
         <h2>Built for Shmoocon 2025</h2>
         <p class="mt-3 text-start summary">
-            Seccomp-Diff is a tool designed to compare seccomp filters applied to containers, 
+            <a href="https://www.github.com/antitree/seccomp-diff">Seccomp-Diff</a> compares seccomp filters applied to containers, 
             addressing the challenges of identifying and maintaining secure configurations. 
-            By highlighting differences between two containers, it helps ensure more secure setups compared to runtime defaults.
-        </p>
-        <p class="mt-3 summary text-start"><b>Useage:</b>List the containers and select two containers you'd like to compare. Click the Seccomp Diff button to compare what the kernel sees the applied bpf filters are.</p>
-        
+            By highlighting differences between two containers, it helps determine if one profile is more constrained over another.
+            </p>
+  
+            <p class="mt-3 summary text-start">
+                <b>Usage:</b>
+                <span class="d-block ms-3">- Choose your runtime below</span>
+                <span class="d-block ms-3">- Click List Containers to find containers in your environment</span>
+                <span class="d-block ms-3">- Choose a container and click "Compare to Defaults"</span>
+                <span class="d-block ms-3">- or</span>
+                <span class="d-block ms-3">- Choose two containers to compare</span>
+                This will PTRACE and disassemble the seccomp-BPF filters and render them back to you.
+            </p>
+            
     </div>
+    
+    
+    
     <div class="container py-5">
         <div class="d-flex justify-content-center align-items-center mb-4 gap-3">
             <button class="btn btn-primary" onclick="listContainers()">List Containers</button>
@@ -55,7 +66,7 @@
         <div class="text-center mb-4 d-flex justify-content-center align-items-center gap-3">
             <input type="text" id="nameFilter" class="form-control w-auto" placeholder="Filter by name" oninput="filterByName()">
             <button id="runDiffButton" class="btn btn-primary" onclick="runSeccompDiff()" style="display:inline-block;">Compare Containers</button>
-            <button id="runDefaultButton" class="btn btn-primary" onclick="runDefaultDiff()" style="display:inline-block;">Compare Defaults</button>
+            <button id="runDefaultButton" class="btn btn-primary" onclick="runDefaultDiff()" style="display:inline-block;">Compare To Default</button>
             <div class="tooltip-container namespace-container" style="display:none">
                 <select id="namespaceFilter" class="form-select" onchange="filterByNamespace()">
                     <option value="">All Namespaces</option>

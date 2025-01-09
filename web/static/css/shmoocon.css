@@ -70,6 +70,15 @@ h1, h2, h3 {
     font-weight: bold;
     font-style: normal;
 }
+.text-start ul {
+    margin-left: 1.5em; /* Indent the list to align with the paragraph */
+    padding-left: 0;    /* Remove the default padding */
+    list-style-position: inside; /* Ensure bullets align with text */
+}
+
+.bi-caret-right-fill {
+    color: var(--highlight);
+}
 
 .highlight {
     color: var(--highlight);
