@@ -154,7 +154,7 @@ async function fillDiffTable(data) {
                         // SECCOMP row
                         if (isValidJson(cell)) {
                             const jsonContent = JSON.parse(cell);
-                            prettySeccompJso[index] = JSON.stringify(jsonContent, null, 2);
+                            prettySeccompJson[index] = JSON.stringify(jsonContent, null, 2);
                         }
                         
                         return;
@@ -171,7 +171,7 @@ async function fillDiffTable(data) {
                             prettySeccompJson[index] !== "Runtime Default"
                         ) {
                             td.style.cursor = "pointer";
-                            td.onclick = () => showModal(`<pre>${prettySeccompJsonArray[index]}</pre>`);
+                            td.onclick = () => showModal(`<pre>${prettySeccompJson[index]}</pre>`);
                             td.innerHTML = `${cell} Instructions <i class="bi bi-caret-right-fill highlight"></i>`;
                         } else {
                             td.textContent = `${cell} Instructions`;

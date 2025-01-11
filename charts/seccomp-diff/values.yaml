@@ -1,4 +1,5 @@
 namespace: seccomp-diff
+# nodename: shmoocon-cluster-v129cillium-controlplane
 
 image:
   repository: antitree/seccomp-diff
@@ -27,27 +28,22 @@ affinity: {}
 # profile-allow-unsafe.json
 # profile-complain-block-high-risk.json
 # profile-runc-default.json
+# profile-hello-shmoo.json
 # unconfined - none applied at all
 # RuntimeDefault - uses base runtime config
 
 demos:
   enabled: true
   deployments:
-  - name: demo1
-    image: nginx:latest
-    seccompProfile: "profile-complain-unsafe.json"
-  - name: demo2
-    image: nginx:latest
-    seccompProfile: "profile-complain-block-high-risk.json"
-  - name: demo3
-    image: nginx:latest
-    seccompProfile: "profile-block-all.json"
+  - name: happyshmoocon-default
+    image: antitree/happyshmoocon:latest
+    type: RuntimeDefault
+  - name: happyshmoocon-custom
+    image: antitree/happyshmoocon:latest
+    seccompProfile: "profile-happy-shmoocon.json"
   - name: demo4
     image: nginx:latest
     seccompProfile: "profile-complain-unsafe.json"
-  - name: demo5
-    image: nginx:latest
-    type: Unconfined
   - name: demo6
     image: nginx:latest
     type: RuntimeDefault

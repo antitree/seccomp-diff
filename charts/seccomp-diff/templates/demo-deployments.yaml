@@ -4,10 +4,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: {{ .name }}
-    namespace: {{ $.Values.namespace }}  # Dynamically set the namespace
-    labels:
-      app: {{ .name }}
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}  # Dynamically set the namespace
+  labels:
+    app: {{ .name }}
 spec:
   replicas: 1
   selector:
@@ -18,6 +18,7 @@ spec:
       labels:
         app: {{ .name }}
     spec:
+      {{- if $.Values.nodename }}
       affinity:
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -26,8 +27,9 @@ spec:
                 - key: app
                   operator: In
                   values:
-                    - {{ .name }}
+                    - {{ $.Values.nodename }}
             topologyKey: "kubernetes.io/hostname"
+      {{- end }}
       containers:
       - name: {{ .name }}
         image: {{ .image }}
@@ -49,5 +51,12 @@ spec:
             type: Localhost
             localhostProfile: operator/{{ $.Values.namespace }}/{{ .seccompProfile }}
             {{- end }}
+          {{- if .capabilities }}
+          capabilities:
+            add:
+              {{- range .capabilities }}
+              - {{ . | quote }}
+              {{- end }}
+          {{- end }}
 {{- end }}
 {{- end }}

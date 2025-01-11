@@ -16,6 +16,7 @@ spec:
         app: seccomp-diff
     spec:
       hostPID: true
+      {{- if .Values.nodename }}
       affinity:
         podAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -24,8 +25,9 @@ spec:
                 - key: app
                   operator: In
                   values:
-                    - seccomp-diff
+                    - {{ .Values.nodename }}
             topologyKey: "kubernetes.io/hostname"
+      {{- end }}
       containers:
       - name: seccomp-diff
         resources:
