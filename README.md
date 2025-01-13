@@ -105,7 +105,8 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Related work
 
-https://github.com/david942j/seccomp-tools - original powerful seccomp tool set written in Ruby
+https://github.com/david942j/seccomp-tools - original powerful seccomp tool set written in Ruby that inspired this project
+https://github.com/kleptog/PyBPF - module that does some of the heavy lifting of the BPF struct
 
 ## Acknowledgments
 
