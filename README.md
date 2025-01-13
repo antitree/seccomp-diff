@@ -3,13 +3,14 @@
 Analyze binaries and containers to extract and disassemble seccomp-bpf profiles. 
 This tools is designed to help you determine whether or not a given seccomp-bpf
 profile is more or less constrained than others as well as give you the ground 
-truth for the filters applied to a process. 
+truth for the filters applied to a process.
 
 
 #### Features:
-- Attaches to a running process (via `ptrace`) to extract its seccomp filter.
-- Disassemble the BPF filter for the given seccomp profile
+- Extracts true seccomp filter from a process/container via `ptrace`
+- Disassembles the seccomp-BPF filter for the given seccomp profile
 - Lists all allowed and blocked syscalls based on the active seccomp profile.
+- Reduces down the various actions (KILL_THREAD, KILL_PROCESS, ERRNO, BLOCK) into a restriction or an allowance for easier understanding
 - Outputs a summary of system call rules for analysis.
 
 ![](/examples/happy_shmoocon_web.png)
@@ -156,19 +157,21 @@ spec:
 ```
 ---
 
+## Current Limitations
+* [ ] Only visually diffs x86_64 for now
+* [ ] For k8s, can only dump the Node's containers that it's installed on. It needs to be ported to a Daemonset to get the whole cluster
+
 
 ## Related work
 
 https://github.com/david942j/seccomp-tools - original powerful seccomp tool set written in Ruby that inspired this project
 https://github.com/kleptog/PyBPF - module that does some of the heavy lifting of the BPF struct
 
-## Acknowledgments
+## Thanks
 
 - Jay Beale
 - Mike Yamamoto
 - Alex Page
-
----
 
 ## License
 
