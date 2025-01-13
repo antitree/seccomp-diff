@@ -12,6 +12,8 @@ truth for the filters applied to a process.
 - Lists all allowed and blocked syscalls based on the active seccomp profile.
 - Outputs a summary of system call rules for analysis.
 
+![](/examples/happy_shmoocon_web.png)
+
 ## `seccomp_diff.py`
 
 CLI tool that will diff two given containers' given seccomp profiles.
@@ -73,35 +75,87 @@ l0006: 06 00 00 00000000        RETURN KILL
 A web interface for seccomp-diff to visually diff system calls. Ideal for use
 within a Kubernetes cluster. 
 
+
+
 ### Useage
 
 Example run locally:
 ```bash
+sudo pip install -r requirements.txt
 sudo python web.py
 ```
 
 Example Docker run:
 ```bash
-docker run --rm -d antitree/seccomp-diff:latest
+docker run --rm -it \                                                                                                     
+  --pid=host --privileged \                            
+  --cap-add=SYS_PTRACE \                                             
+  --security-opt seccomp=unconfined -v /var/run/docker.sock:/var/run/docker.sock \  
+  -v /proc:/host/proc:ro -v /run/containerd/containerd.sock:/run/containerd/containerd.sock \
+  antitree/seccomp-diff
 ```
+
 
 Example helm chart:
 ```bash
 helm install seccomp-diff charts/seccomp-diff
+kubectl port-forward service/seccomp-diff 5000:5000
 ```
 
-### Installation:
-Install required Python libraries:
-```bash
-pip install -r requirements.txt
+Example k8s deployment
+```yaml
+Example k8s deployment:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seccomp-diff
+  labels:
+    app: seccomp-diff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seccomp-diff
+  template:
+    metadata:
+      labels:
+        app: seccomp-diff
+    spec:
+      hostPID: true
+      containers:
+      - name: seccomp-diff
+        image: antitree/seccomp-diff:latest
+        securityContext:
+          privileged: true  
+          capabilities:
+            add:
+            - SYS_PTRACE  
+        volumeMounts:
+        - name: host-proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: docker-socket
+          mountPath: /var/run/docker.sock  # OPTIONAL for Docker
+        - name: containerd-socket
+          mountPath: /var/run/containerd/containerd.sock  
+        env:
+        - name: PROC_PATH
+          value: "/host/proc"
+        command: ["flask"]
+        args: ["run", "--debug"]
+      volumes:
+      - name: host-proc
+        hostPath:
+          path: /proc
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock  # Host path for Docker socket
+      - name: containerd-socket
+        hostPath:
+          path: /var/run/containerd/containerd.sock  # Host path for Docker socket
 ```
 ---
 
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
----
 
 ## Related work
 
@@ -113,3 +167,10 @@ https://github.com/kleptog/PyBPF - module that does some of the heavy lifting of
 - Jay Beale
 - Mike Yamamoto
 - Alex Page
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
