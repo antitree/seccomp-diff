@@ -9,12 +9,17 @@ from rich.text import Text
 import argparse
 
 ENV = "Docker" # Sets the default environment to be docker for local testing
+SHMOODE = False # Shmoocon branding for Shmoocon 2025
 
 def display_shmoocon_intro():
     """Display introductory ASCII art and information about the Shmoocon project."""
     console = Console()
-
-    ascii_art = [
+    
+    
+    
+    ascii_art = []
+    if SHMOODE: 
+        ascii_art += [
         " ▗▄▄▖▗▖ ▗▖▗▖  ▗▖ ▗▄▖  ▗▄▖  ▗▄▄▖ ▗▄▖ ▗▖  ▗▖",
         "▐▌   ▐▌ ▐▌▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌ ▐▌▐▛▚▖▐▌",
         " ▝▀▚▖▐▛▀▜▌▐▌  ▐▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌ ▝▜▌",
@@ -29,13 +34,15 @@ def display_shmoocon_intro():
         "             >>>  Commencement  <<<",
         "",
         "      Authored by: Jay Beale & Mark Manning",
-        "",
+        ""
+        ]
+    ascii_art += [        
         "=====================================================",
         "                 Docker seccomp differ",
         "  Choose 2 of the provided running containers to diff",
         "  the seccomp profiles that are applied. Try adding",
         "  different capabilities to your containers and watch",
-        "  what happens. Happy Shmoocon!",
+        "  what happens.",
         "====================================================="
     ]
 
