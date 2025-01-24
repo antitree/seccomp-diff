@@ -21,7 +21,7 @@ CLI tool that will diff two given containers' given seccomp profiles.
 
 ![](/examples/happy_shmoocon.gif)
 
-### Useage:
+### Usage:
 ```
 usage: seccomp_diff.py [-h] [-k] [-d]
 
@@ -40,7 +40,7 @@ sudo python seccomp_diff.py -d
 ## `seccomp-dump`
 Disassemble and display the seccomp-bpf profiles applied to a given process or container. 
 
-### Useage
+### Usage
 ```
 usage: seccomp_dump.py [-h] [--dump] [--summary] [--list] [--allarch] [pid]
 
@@ -78,7 +78,7 @@ within a Kubernetes cluster.
 
 
 
-### Useage
+### Usage
 
 Example run locally:
 ```bash
