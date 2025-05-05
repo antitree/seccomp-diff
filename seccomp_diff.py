@@ -9,33 +9,12 @@ from rich.text import Text
 import argparse
 
 ENV = "Docker" # Sets the default environment to be docker for local testing
-SHMOODE = False # Shmoocon branding for Shmoocon 2025
 
-def display_shmoocon_intro():
+def display_intro():
     """Display introductory ASCII art and information about the Shmoocon project."""
     console = Console()
     
-    
-    
     ascii_art = []
-    if SHMOODE: 
-        ascii_art += [
-        " ▗▄▄▖▗▖ ▗▖▗▖  ▗▖ ▗▄▖  ▗▄▖  ▗▄▄▖ ▗▄▖ ▗▖  ▗▖",
-        "▐▌   ▐▌ ▐▌▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌ ▐▌▐▛▚▖▐▌",
-        " ▝▀▚▖▐▛▀▜▌▐▌  ▐▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌ ▝▜▌",
-        "▗▄▄▞▘▐▌ ▐▌▐▌  ▐▌▝▚▄▞▘▝▚▄▞▘▝▚▄▄▖▝▚▄▞▘▐▌  ▐▌",
-        "",
-        "                     ▄▄▄▄ ▄▀▀▚▖▄▄▄▄ ▄▄▄▄  ",
-        "                        █ █  ▐▌   █ █     ",
-        "                     █▀▀▀ █  ▐▌█▀▀▀ ▀▀▀█  ",
-        "                     █▄▄▄ ▀▄▄▞▘█▄▄▄ ▄▄▄█  ",
-        "",
-        "                  SHMOOCON 2025",
-        "             >>>  Commencement  <<<",
-        "",
-        "      Authored by: Jay Beale & Mark Manning",
-        ""
-        ]
     ascii_art += [        
         "=====================================================",
         "                 Docker seccomp differ",
@@ -53,7 +32,7 @@ def display_shmoocon_intro():
 
 def main():
     """Main entry point for comparing seccomp policies of Docker containers."""
-    display_shmoocon_intro()
+    display_intro()
     
     parser = argparse.ArgumentParser(description="Get container information from Docker or Kubernetes.")
     parser.add_argument("-k", "--kubernetes", action="store_true", help="Use Kubernetes to fetch container info.")
