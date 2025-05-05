@@ -2,14 +2,15 @@ name: Semgrep
 
 on:
   pull_request:
-    branches: [ main ]
+    types: [opened, synchronize, reopened]
+    branches: [ "**" ]  # All branches
 
 jobs:
   semgrep:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
+      pull-requests: write  # Needed for PR comments
 
     steps:
       - name: Checkout code
@@ -18,5 +19,4 @@ jobs:
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          config: auto  # or use "p/ci" for curated rules
-
+          config: auto  # or use p/ci or a custom ruleset
