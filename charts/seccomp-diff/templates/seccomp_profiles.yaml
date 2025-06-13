@@ -198,7 +198,7 @@ spec:
 apiVersion: security-profiles-operator.x-k8s.io/v1beta1
 kind: SeccompProfile
 metadata:
-  name: profile-happy-shmoocon
+  name: profile-happy-seccompdiff
   namespace: {{ .Values.namespace }}
   annotations:
     description: "Custom build seccomp profile for hello-shmoo container."

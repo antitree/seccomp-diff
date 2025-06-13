@@ -1,5 +1,5 @@
 namespace: seccomp-diff
-# nodename: shmoocon-cluster-v129cillium-controlplane
+# nodename: seccompdiff-cluster-v129cillium-controlplane
 
 image:
   repository: antitree/seccomp-diff
@@ -35,12 +35,12 @@ affinity: {}
 demos:
   enabled: true
   deployments:
-  - name: happyshmoocon-default
-    image: antitree/happyshmoocon:latest
+  - name: happyseccompdiff-default
+    image: antitree/happyseccompdiff:latest
     type: RuntimeDefault
-  - name: happyshmoocon-custom
-    image: antitree/happyshmoocon:latest
-    seccompProfile: "profile-happy-shmoocon.json"
+  - name: happyseccompdiff-custom
+    image: antitree/happyseccompdiff:latest
+    seccompProfile: "profile-happy-seccompdiff.json"
   - name: demo4
     image: nginx:latest
     seccompProfile: "profile-complain-unsafe.json"
