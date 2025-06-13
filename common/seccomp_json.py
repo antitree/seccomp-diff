@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 from common.ptrace import get_seccomp_filters, get_default_seccomp
 
 
@@ -27,7 +28,8 @@ def _parse_action(action: str):
     return mapping.get(name, "SCMP_ACT_ALLOW"), errno
 
 
-def _scmp_to_string(action: str, errno: int | None):
+
+def _scmp_to_string(action: str, errno: Optional[int]):
     reverse = {
         "SCMP_ACT_ALLOW": "ALLOW",
         "SCMP_ACT_KILL": "KILL",
