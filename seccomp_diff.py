@@ -11,7 +11,7 @@ import argparse
 ENV = "Docker" # Sets the default environment to be docker for local testing
 
 def display_intro():
-    """Display introductory ASCII art and information about the Shmoocon project."""
+    """Display introductory ASCII art and information about the Seccompdiff project."""
     console = Console()
     
     ascii_art = []

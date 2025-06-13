@@ -13,13 +13,13 @@ truth for the filters applied to a process.
 - Reduces down the various actions (KILL_THREAD, KILL_PROCESS, ERRNO, BLOCK) into a restriction or an allowance for easier understanding
 - Outputs a summary of system call rules for analysis.
 
-![](/examples/happy_shmoocon_web.png)
+![](/examples/demo_web.png)
 
 ## `seccomp_diff.py`
 
 CLI tool that will diff two given containers' given seccomp profiles.
 
-![](/examples/happy_shmoocon.gif)
+![](/examples/demo.gif)
 
 ### Usage:
 ```
