@@ -63,9 +63,9 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
     danger_style = Style(color="red", blink=True, bold=True)
     
     try:
-        profile1 = get_seccomp_profile_json(container1["pid"])
+        profile1, full1, dis1 = get_seccomp_profile_json(container1["pid"])
         if container2 == "default":
-            profile2 = get_default_seccomp_json()
+            profile2, full2, dis2 = get_default_seccomp_json()
             container2 = {
                 "pid": None,
                 "name": "RuntimeDefault",
@@ -73,13 +73,15 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
                 "caps": "",
             }
         else:
-            profile2 = get_seccomp_profile_json(container2["pid"])
+            profile2, full2, dis2 = get_seccomp_profile_json(container2["pid"])
 
         container1["summary"], default_action1 = json_to_summary(profile1)
         container2["summary"], default_action2 = json_to_summary(profile2)
 
-        full1 = json.dumps(profile1, indent=2)
-        full2 = json.dumps(profile2, indent=2)
+        json1 = json.dumps(profile1, indent=2)
+        json2 = json.dumps(profile2, indent=2)
+        container1["seccomp"] = json1
+        container2["seccomp"] = json2
 
         console = Console()
         table = Table(show_header=True, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)
@@ -89,9 +91,9 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         
         # Add Seccomp and Capabilities Information
         table.add_custom_row("[b]seccomp", container1["seccomp"], container2["seccomp"])
-        # Add total instructions row
-        container1["total"] = container1["summary"].get("total", {"count": 0}).get("count")
-        container2["total"] = container2["summary"].get("total", {"count": 0}).get("count")
+        # Add total instructions row (based on original BPF)
+        container1["total"] = dis1.syscallSummary.get("total", {"count": 0}).get("count")
+        container2["total"] = dis2.syscallSummary.get("total", {"count": 0}).get("count")
         table.add_custom_row("[b]total", str(container1["total"]), str(container2["total"]))
         
         

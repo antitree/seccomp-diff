@@ -73,14 +73,16 @@ def disassembler_to_json(dis):
 
 
 def get_seccomp_profile_json(pid):
-    """Return docker-style seccomp profile JSON for a process."""
-    _, dis = get_seccomp_filters(pid)
-    return disassembler_to_json(dis)
+    """Return docker-style seccomp profile JSON and original disassembly."""
+    full, dis = get_seccomp_filters(pid)
+    profile = disassembler_to_json(dis)
+    return profile, full, dis
 
 
 def get_default_seccomp_json():
-    _, dis = get_default_seccomp()
-    return disassembler_to_json(dis)
+    full, dis = get_default_seccomp()
+    profile = disassembler_to_json(dis)
+    return profile, full, dis
 
 
 def json_to_summary(profile):
