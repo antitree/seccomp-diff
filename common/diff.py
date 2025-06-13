@@ -65,7 +65,6 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
     
     try:
         profile1, full1, dis1 = get_seccomp_profile_json(container1["pid"])
-        upload_if_missing(profile1, container1.get("image", ""))
         if container2 == "default":
             profile2, full2, dis2 = get_default_seccomp_json()
             container2 = {
@@ -76,7 +75,6 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
             }
         else:
             profile2, full2, dis2 = get_seccomp_profile_json(container2["pid"])
-            upload_if_missing(profile2, container2.get("image", ""))
 
         container1["summary"], default_action1 = json_to_summary(profile1)
         container2["summary"], default_action2 = json_to_summary(profile2)
@@ -161,6 +159,10 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
     
     if len(table.rows) <= 3 and container1["total"] == container2["total"]:
         console.print(Text("No seccomp filter differences were found between the two containers", justify="center"))
+
+    # After rendering the table, sync profiles with seccompare.com
+    upload_if_missing(profile1, container1.get("image", ""))
+    upload_if_missing(profile2, container2.get("image", ""))
 
     return table, full1, full2
 
