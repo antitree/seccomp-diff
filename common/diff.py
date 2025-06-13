@@ -1,5 +1,9 @@
 import json
-from common.ptrace import get_seccomp_filters, get_default_seccomp
+from common.seccomp_json import (
+    get_seccomp_profile_json,
+    get_default_seccomp_json,
+    json_to_summary,
+)
 from common.output import CustomTable as Table
 from lib.syscalls.x86_64 import syscall_dict as SYSCALLS
 from rich.console import Console
@@ -59,30 +63,23 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
     danger_style = Style(color="red", blink=True, bold=True)
     
     try:
-        full1, d1 = get_seccomp_filters(container1["pid"])
+        profile1 = get_seccomp_profile_json(container1["pid"])
         if container2 == "default":
-            full2, d2 = get_default_seccomp()
+            profile2 = get_default_seccomp_json()
             container2 = {
-                "pid": None, 
+                "pid": None,
                 "name": "RuntimeDefault",
-                "seccomp": "", 
+                "seccomp": "",
                 "caps": "",
-                }
-        else: 
-            full2, d2 = get_seccomp_filters(container2["pid"])
-
-        if d1:
-            container1["summary"] = d1.syscallSummary
+            }
         else:
-            container1["summary"] = {}
+            profile2 = get_seccomp_profile_json(container2["pid"])
 
-        if d2:
-            container2["summary"] = d2.syscallSummary
-        else:
-            container2["summary"] = {}
+        container1["summary"], default_action1 = json_to_summary(profile1)
+        container2["summary"], default_action2 = json_to_summary(profile2)
 
-        default_action1 = d1.defaultAction if d1 else "unknown"
-        default_action2 = d2.defaultAction if d2 else "unknown"
+        full1 = json.dumps(profile1, indent=2)
+        full2 = json.dumps(profile2, indent=2)
 
         console = Console()
         table = Table(show_header=True, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)
