@@ -59,7 +59,6 @@ def get_seccomp_filters(pid):
         return b.disassemble(""), b
 
     # Retrieve the seccomp filter length
-    sock_fprog = SockFprog()
     no_instructions = ptrace(PTRACE_SECCOMP_GET_FILTER, pid, 0, None)
     if no_instructions <= 0:
         print(f"WARNING: No seccomp profile found for {pid}")
@@ -68,9 +67,12 @@ def get_seccomp_filters(pid):
 
     # Allocate buffer for the filters
     buffer = (SockFilter * no_instructions)()
+    fprog = SockFprog()
+    fprog.len = no_instructions
+    fprog.filter = ctypes.cast(buffer, ctypes.POINTER(SockFilter))
 
     # Retrieve the actual filters
-    ptrace(PTRACE_SECCOMP_GET_FILTER, pid, 0, ctypes.byref(buffer))
+    ptrace(PTRACE_SECCOMP_GET_FILTER, pid, 0, ctypes.byref(fprog))
 
     # Detach from the process
     ptrace(PTRACE_DETACH, pid, 0, 0)
