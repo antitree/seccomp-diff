@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY common /app/common
 COPY lib /app/lib
 COPY web /app/web
+COPY daemon /app/daemon
 COPY ./*.py /app/
 
 # Set Flask environment variables
