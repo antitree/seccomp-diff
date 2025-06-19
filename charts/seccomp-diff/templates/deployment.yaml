@@ -15,7 +15,7 @@ spec:
       labels:
         app: seccomp-diff
     spec:
-      hostPID: true
+      # Web interface does not require host privileges
       {{- if .Values.nodename }}
       affinity:
         podAffinity:
@@ -39,31 +39,8 @@ spec:
             memory: {{ .Values.resources.requests.memory }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        securityContext:
-          privileged: true  # Allow ptrace and host-level access
-          capabilities:
-            add:
-            - SYS_PTRACE  # Add ptrace capability
-        volumeMounts:
-        - name: host-proc
-          mountPath: /host/proc
-          readOnly: true
-        - name: docker-socket
-          mountPath: /var/run/docker.sock  # Mount Docker socket
-        - name: containerd-socket
-          mountPath: /var/run/containerd/containerd.sock  
         env:
-        - name: PROC_PATH
-          value: "/host/proc"
+        - name: COLLECTOR_URLS
+          value: {{ .Values.collectorUrls | quote }}
         command: ["flask"]
         args: ["run", "--debug"]
-      volumes:
-      - name: host-proc
-        hostPath:
-          path: /proc
-      - name: docker-socket
-        hostPath:
-          path: /var/run/docker.sock  # Host path for Docker socket
-      - name: containerd-socket
-        hostPath:
-          path: /var/run/containerd/containerd.sock  # Host path for Docker socket

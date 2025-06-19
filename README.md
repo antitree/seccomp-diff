@@ -103,6 +103,12 @@ helm install seccomp-diff charts/seccomp-diff
 kubectl port-forward service/seccomp-diff 5000:5000
 ```
 
+The chart now deploys two components:
+* A web deployment that serves the UI.
+* A daemonset (`seccomp-diff-collector`) running on every node and exposing container
+  data via a headless service. The web interface fetches data from these
+  collectors using the `COLLECTOR_URLS` environment variable.
+
 Example k8s deployment
 ```yaml
 Example k8s deployment:
@@ -159,7 +165,7 @@ spec:
 
 ## Current Limitations
 * [ ] Only visually diffs x86_64 for now
-* [ ] For k8s, can only dump the Node's containers that it's installed on. It needs to be ported to a Daemonset to get the whole cluster
+* [ ] Only basic cluster aggregation is implemented. The collector daemonset provides data per node which the web service consumes.
 
 
 ## Related work

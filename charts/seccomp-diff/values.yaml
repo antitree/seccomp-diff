@@ -47,3 +47,12 @@ demos:
   - name: demo6
     image: nginx:latest
     type: RuntimeDefault
+collector:
+  image:
+    repository: antitree/seccomp-diff
+    tag: latest
+    pullPolicy: Always
+  service:
+    port: 8000
+
+collectorUrls: "http://seccomp-diff-collector:8000"

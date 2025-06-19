@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: seccomp-diff-collector
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: seccomp-diff-collector
+spec:
+  clusterIP: None
+  selector:
+    app: seccomp-diff-collector
+  ports:
+  - port: {{ .Values.collector.service.port }}
+    targetPort: 8000
+    protocol: TCP
+    name: http

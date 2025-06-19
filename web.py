@@ -1,7 +1,8 @@
-from common.diff import compare_seccomp_policies
+from common.diff import compare_seccomp_policies, compare_seccomp_json_profiles
 from common import containerd
 from common import docker
 from flask import Flask, render_template, render_template_string, request, jsonify, send_from_directory, abort
+import requests
 
 import json
 import markdown
@@ -12,6 +13,7 @@ app = Flask(__name__,
             static_folder="web/static",
             template_folder="web/templates",
             )
+app.config["COLLECTOR_URLS"] = [url for url in os.environ.get("COLLECTOR_URLS", "").split(',') if url]
 
 @app.route('/')
 def index():
@@ -35,6 +37,21 @@ def list_k8s(namespace="k8s.io"):
     for container, values in container_pids.items():
         containers.append(values)
     return {"containers": containers}
+
+
+def list_k8s_remote():
+    containers = []
+    for url in app.config.get("COLLECTOR_URLS", []):
+        try:
+            resp = requests.get(f"{url}/containers", timeout=5)
+            resp.raise_for_status()
+            data = resp.json()
+            for c in data.get("containers", []):
+                c["collector"] = url
+                containers.append(c)
+        except Exception as e:
+            app.logger.error(f"Collector {url} error: {e}")
+    return {"containers": containers}
     
 
 @app.route('/list_containers', methods=['POST'])
@@ -42,11 +59,13 @@ def list_containers():
     """Return a list of running containers."""
     
     try:
-        if app.config["MODE"] == "Docker": 
+        if app.config["MODE"] == "Docker":
             # TODO testing if I need docker at all
             #return jsonify(list_docker())
             return jsonify(list_docker())
         else:
+            if app.config.get("COLLECTOR_URLS"):
+                return jsonify(list_k8s_remote())
             return jsonify(list_k8s(namespace="k8s.io"))
     except Exception as e:
         app.logger.error(f"Error during listing containers: {e} ")
@@ -175,12 +194,22 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
     try:
         container1, container2 = container_selection
 
-        # Generate the table using compare_seccomp_policies
-        table,full1,full2 = compare_seccomp_policies(
-            container1, container2, 
-            reduce=reduce,
-            only_diff=only_diff,
-            only_dangerous=only_dangerous,
+        if app.config.get("COLLECTOR_URLS") and "collector" in container1 and "collector" in container2:
+            prof1 = requests.get(f"{container1['collector']}/seccomp/{container1['pid']}").json()
+            prof2 = requests.get(f"{container2['collector']}/seccomp/{container2['pid']}").json()
+            table,full1,full2 = compare_seccomp_json_profiles(
+                prof1['profile'], prof2['profile'],
+                container1, container2,
+                reduce=reduce,
+                only_diff=only_diff,
+                only_dangerous=only_dangerous,
+            )
+        else:
+            table,full1,full2 = compare_seccomp_policies(
+                container1, container2,
+                reduce=reduce,
+                only_diff=only_diff,
+                only_dangerous=only_dangerous,
             )
         #app.logger.debug(f"Reduce: {reduce}, only_diff: {only_diff}, only_dangerous: {only_dangerous}")
         

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: seccomp-diff-collector
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: seccomp-diff-collector
+spec:
+  selector:
+    matchLabels:
+      app: seccomp-diff-collector
+  template:
+    metadata:
+      labels:
+        app: seccomp-diff-collector
+    spec:
+      hostPID: true
+      containers:
+      - name: collector
+        image: {{ .Values.collector.image.repository }}:{{ .Values.collector.image.tag }}
+        imagePullPolicy: {{ .Values.collector.image.pullPolicy }}
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - SYS_PTRACE
+        volumeMounts:
+        - name: host-proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: containerd-socket
+          mountPath: /var/run/containerd/containerd.sock
+        env:
+        - name: PROC_PATH
+          value: "/host/proc"
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        command: ["python"]
+        args: ["collector.py"]
+      volumes:
+      - name: host-proc
+        hostPath:
+          path: /proc
+      - name: containerd-socket
+        hostPath:
+          path: /var/run/containerd/containerd.sock
