@@ -93,23 +93,29 @@ def get_container_image(containerd_socket, container_id, namespace="k8s.io"):
         return None
 
 def get_containers(containerd_socket="/run/containerd/containerd.sock", namespace="k8s.io", with_seccomp=False):
+    """Return metadata for running containers only."""
     container_info = {}
 
     # Connect to the containerd gRPC socket
     channel = grpc.insecure_channel(f"unix://{containerd_socket}")
-    client = containers_pb2_grpc.ContainersStub(channel)
+    cont_client = containers_pb2_grpc.ContainersStub(channel)
+    task_client = tasks_pb2_grpc.TasksStub(channel)
 
     try:
-        # Specify the namespace in the metadata
         metadata = (("containerd-namespace", namespace),)
-        request = containers_pb2.ListContainersRequest()
-        response = client.List(request, metadata=metadata)       
+        containers_resp = cont_client.List(containers_pb2.ListContainersRequest(), metadata=metadata)
+        tasks_resp = task_client.List(tasks_pb2.ListTasksRequest(), metadata=metadata)
     except grpc.RpcError as e:
-        print(f"Error accessing containerd: {e}")    
-        
-    
-    for container in response.containers:
+        print(f"Error accessing containerd: {e}")
+        return container_info
+
+    running = {t.container_id: t.pid for t in tasks_resp.tasks}
+
+    for container in containers_resp.containers:
         container_id = container.id
+        if container_id not in running:
+            # Skip containers without a running task
+            continue
         name = container_id
         runtime = container.runtime.name
         
@@ -124,14 +130,7 @@ def get_containers(containerd_socket="/run/containerd/containerd.sock", namespac
         if "io.kubernetes.pod.namespace" in labels: 
             container_namespace = str(labels["io.kubernetes.pod.namespace"])
             
-        try: 
-            pid = get_container_pid(containerd_socket, container_id, namespace=namespace)
-            # TODO clean this up. Either it's a there or it's not
-            # if not pid:
-            #     print(f"Error: Containerd container {container_id} not found")
-            #     break
-        except Exception as e:
-            print(f"UNCAUGHT EXCEPTION: NEEEDS INVESTIGATION: {e}")
+        pid = running.get(container_id)
             
             
         # get container image
