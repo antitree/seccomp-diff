@@ -55,6 +55,8 @@ spec:
         env:
         - name: PROC_PATH
           value: "/host/proc"
+        - name: AGENT_URLS
+          value: "{{ .Values.agentUrls }}"
         command: ["flask"]
         args: ["run", "--debug"]
       volumes:

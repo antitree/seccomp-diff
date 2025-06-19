@@ -1,6 +1,7 @@
 from common.diff import compare_seccomp_policies
 from common import containerd
 from common import docker
+from common import agent_client
 from flask import Flask, render_template, render_template_string, request, jsonify, send_from_directory, abort
 
 import json
@@ -12,6 +13,7 @@ app = Flask(__name__,
             static_folder="web/static",
             template_folder="web/templates",
             )
+app.config["AGENT_URLS"] = os.environ.get("AGENT_URLS", "").split(',') if os.environ.get("AGENT_URLS") else []
 
 @app.route('/')
 def index():
@@ -40,11 +42,12 @@ def list_k8s(namespace="k8s.io"):
 @app.route('/list_containers', methods=['POST'])
 def list_containers():
     """Return a list of running containers."""
-    
+
     try:
-        if app.config["MODE"] == "Docker": 
-            # TODO testing if I need docker at all
-            #return jsonify(list_docker())
+        if app.config["AGENT_URLS"]:
+            containers = agent_client.list_all_containers()
+            return jsonify({"containers": containers})
+        if app.config["MODE"] == "Docker":
             return jsonify(list_docker())
         else:
             return jsonify(list_k8s(namespace="k8s.io"))
@@ -177,10 +180,11 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
 
         # Generate the table using compare_seccomp_policies
         table,full1,full2 = compare_seccomp_policies(
-            container1, container2, 
+            container1, container2,
             reduce=reduce,
             only_diff=only_diff,
             only_dangerous=only_dangerous,
+            fetch_profile_fn=agent_client.fetch_profile if app.config["AGENT_URLS"] else None,
             )
         #app.logger.debug(f"Reduce: {reduce}, only_diff: {only_diff}, only_dangerous: {only_dangerous}")
         
@@ -194,7 +198,8 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
 
 if __name__ == '__main__':
     app.debug = True
-    if app.debug: 
+    if app.debug:
         app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["MODE"] = "k8s"
+    app.config["AGENT_URLS"] = os.environ.get("AGENT_URLS", "").split(',') if os.environ.get("AGENT_URLS") else []
     app.run(host='0.0.0.0', port=5000, debug=True)

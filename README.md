@@ -103,6 +103,11 @@ helm install seccomp-diff charts/seccomp-diff
 kubectl port-forward service/seccomp-diff 5000:5000
 ```
 
+### Cluster-wide collection
+
+The Helm chart now deploys a DaemonSet called `seccomp-diff-agent` on every node. Each agent exposes a small HTTP API used by the web interface to gather container information and seccomp profiles. Set the `AGENT_URLS` environment variable in the web deployment so it can query each agent service.
+
+
 Example k8s deployment
 ```yaml
 Example k8s deployment:
@@ -159,7 +164,7 @@ spec:
 
 ## Current Limitations
 * [ ] Only visually diffs x86_64 for now
-* [ ] For k8s, can only dump the Node's containers that it's installed on. It needs to be ported to a Daemonset to get the whole cluster
+* [x] For k8s, a DaemonSet is now provided so the web interface can display containers across the entire cluster
 
 
 ## Related work

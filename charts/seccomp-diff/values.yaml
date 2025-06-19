@@ -1,4 +1,6 @@
 namespace: seccomp-diff
+# Comma separated list of agent endpoints
+agentUrls: "http://seccomp-diff-agent:8000"
 # nodename: seccompdiff-cluster-v129cillium-controlplane
 
 image:

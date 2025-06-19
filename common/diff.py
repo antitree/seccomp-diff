@@ -58,15 +58,22 @@ def is_convertible_to_int(s):
 
    
 
-def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True, only_dangerous=False):
+def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True, only_dangerous=False, fetch_profile_fn=None):
     """Compare the seccomp policies of two containers and return a detailed table."""
     
     danger_style = Style(color="red", blink=True, bold=True)
     
+    if fetch_profile_fn is None:
+        def fetch_profile_fn(container):
+            profile, full, dis = get_seccomp_profile_json(container["pid"])
+            total = dis.syscallSummary.get("total", {}).get("count", 0)
+            return profile, full, total
+
     try:
-        profile1, full1, dis1 = get_seccomp_profile_json(container1["pid"])
+        profile1, full1, total1 = fetch_profile_fn(container1)
         if container2 == "default":
             profile2, full2, dis2 = get_default_seccomp_json()
+            total2 = dis2.syscallSummary.get("total", {}).get("count", 0)
             container2 = {
                 "pid": None,
                 "name": "RuntimeDefault",
@@ -74,7 +81,7 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
                 "caps": "",
             }
         else:
-            profile2, full2, dis2 = get_seccomp_profile_json(container2["pid"])
+            profile2, full2, total2 = fetch_profile_fn(container2)
 
         container1["summary"], default_action1 = json_to_summary(profile1)
         container2["summary"], default_action2 = json_to_summary(profile2)
@@ -93,8 +100,8 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         # Add Seccomp and Capabilities Information
         table.add_custom_row("[b]seccomp", container1["seccomp"], container2["seccomp"])
         # Add total instructions row (based on original BPF)
-        container1["total"] = dis1.syscallSummary.get("total", {"count": 0}).get("count")
-        container2["total"] = dis2.syscallSummary.get("total", {"count": 0}).get("count")
+        container1["total"] = total1
+        container2["total"] = total2
         table.add_custom_row("[b]total", str(container1["total"]), str(container2["total"]))
         
         

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: seccomp-diff-agent
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: seccomp-diff-agent
+spec:
+  selector:
+    matchLabels:
+      app: seccomp-diff-agent
+  template:
+    metadata:
+      labels:
+        app: seccomp-diff-agent
+    spec:
+      hostPID: true
+      containers:
+      - name: agent
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["python"]
+        args: ["-m", "daemon.agent"]
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - SYS_PTRACE
+        volumeMounts:
+        - name: host-proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: containerd-socket
+          mountPath: /var/run/containerd/containerd.sock
+      volumes:
+      - name: host-proc
+        hostPath:
+          path: /proc
+      - name: containerd-socket
+        hostPath:
+          path: /var/run/containerd/containerd.sock
