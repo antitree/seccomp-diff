@@ -99,15 +99,19 @@ def get_containers(containerd_socket="/run/containerd/containerd.sock", namespac
     channel = grpc.insecure_channel(f"unix://{containerd_socket}")
     client = containers_pb2_grpc.ContainersStub(channel)
 
+    response = None
     try:
         # Specify the namespace in the metadata
         metadata = (("containerd-namespace", namespace),)
         request = containers_pb2.ListContainersRequest()
-        response = client.List(request, metadata=metadata)       
+        response = client.List(request, metadata=metadata)
     except grpc.RpcError as e:
-        print(f"Error accessing containerd: {e}")    
-        
-    
+        print(f"Error accessing containerd: {e}")
+        return {}
+
+    if response is None:
+        return {}
+
     for container in response.containers:
         container_id = container.id
         name = container_id
