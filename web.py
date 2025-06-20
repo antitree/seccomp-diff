@@ -2,6 +2,7 @@ from common.diff import compare_seccomp_policies
 from common import containerd
 from common import docker
 from flask import Flask, render_template, render_template_string, request, jsonify, send_from_directory, abort
+import requests
 
 import json
 import markdown
@@ -12,6 +13,9 @@ app = Flask(__name__,
             static_folder="web/static",
             template_folder="web/templates",
             )
+
+AGENT_ENDPOINTS = [u.strip() for u in os.getenv("AGENT_ENDPOINTS", "").split(",") if u.strip()]
+app.config["AGENT_ENDPOINTS"] = AGENT_ENDPOINTS
 
 @app.route('/')
 def index():
@@ -35,6 +39,21 @@ def list_k8s(namespace="k8s.io"):
     for container, values in container_pids.items():
         containers.append(values)
     return {"containers": containers}
+
+
+def list_remote():
+    containers = []
+    for url in app.config["AGENT_ENDPOINTS"]:
+        try:
+            resp = requests.get(f"{url}/containers")
+            resp.raise_for_status()
+            data = resp.json()
+            for c in data.values():
+                c["agent_url"] = url
+                containers.append(c)
+        except Exception as e:
+            app.logger.error(f"error contacting agent {url}: {e}")
+    return {"containers": containers}
     
 
 @app.route('/list_containers', methods=['POST'])
@@ -42,9 +61,9 @@ def list_containers():
     """Return a list of running containers."""
     
     try:
-        if app.config["MODE"] == "Docker": 
-            # TODO testing if I need docker at all
-            #return jsonify(list_docker())
+        if app.config["AGENT_ENDPOINTS"]:
+            return jsonify(list_remote())
+        if app.config["MODE"] == "Docker":
             return jsonify(list_docker())
         else:
             return jsonify(list_k8s(namespace="k8s.io"))
@@ -175,9 +194,23 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
     try:
         container1, container2 = container_selection
 
+        if app.config["AGENT_ENDPOINTS"]:
+            for c in (container1, container2):
+                if "agent_url" in c and "pid" in c:
+                    try:
+                        resp = requests.get(f"{c['agent_url']}/seccomp/{c['pid']}")
+                        resp.raise_for_status()
+                        data = resp.json()
+                        c["summary"] = data.get("summary", {})
+                        c["filters"] = data.get("filters", [])
+                        if "defaultAction" in data:
+                            c["defaultAction"] = data["defaultAction"]
+                    except Exception as e:
+                        app.logger.error(f"error fetching seccomp from {c['agent_url']}: {e}")
+
         # Generate the table using compare_seccomp_policies
         table,full1,full2 = compare_seccomp_policies(
-            container1, container2, 
+            container1, container2,
             reduce=reduce,
             only_diff=only_diff,
             only_dangerous=only_dangerous,

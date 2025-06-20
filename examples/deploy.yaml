@@ -30,10 +30,12 @@ spec:
         - name: docker-socket
           mountPath: /var/run/docker.sock  # OPTIONAL for Docker
         - name: containerd-socket
-          mountPath: /var/run/containerd/containerd.sock  
+          mountPath: /run/containerd/containerd.sock
         env:
         - name: PROC_PATH
           value: "/host/proc"
+        - name: CONTAINERD_SOCKET
+          value: /run/containerd/containerd.sock
         command: ["flask"]
         args: ["run", "--debug"]
       volumes:
@@ -45,4 +47,4 @@ spec:
           path: /var/run/docker.sock  # Host path for Docker socket
       - name: containerd-socket
         hostPath:
-          path: /var/run/containerd/containerd.sock  # Host path for Docker socket
+          path: /run/containerd/containerd.sock  # Host path for containerd socket (adjust for k3s)

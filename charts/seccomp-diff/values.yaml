@@ -23,6 +23,11 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
+agent:
+  enabled: true
+  port: 8000
+  containerdSocket: /run/containerd/containerd.sock
+
 ## Custom profiles supported by default:
 # profile-block-all.json (Warning!! will likely not let you start a container)
 # profile-complain-unsafe.json

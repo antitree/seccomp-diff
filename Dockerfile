@@ -23,12 +23,14 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY common /app/common
 COPY lib /app/lib
 COPY web /app/web
+COPY agent /app/agent
 COPY ./*.py /app/
 
 # Set Flask environment variables
 ENV FLASK_APP=web.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_ENV=development
+ENV PYTHONPATH=/app:$PYTHONPATH
 
 # Expose Flask's port
 EXPOSE 5000
