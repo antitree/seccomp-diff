@@ -1,11 +1,9 @@
-try: 
+try:
     from containerd.services.containers.v1 import containers_pb2, containers_pb2_grpc
     from containerd.services.namespaces.v1 import namespace_pb2, namespace_pb2_grpc  # For listing namespaces
     from containerd.services.tasks.v1 import tasks_pb2, tasks_pb2_grpc  # For listing tasks
-except TypeError as e:
-    print("Running in docker-only mode")
-    ENV = "Docker"
-except AttributeError as e:
+    ENV = "k8s"
+except (TypeError, AttributeError, ImportError) as e:
     print("Running in docker-only mode")
     ENV = "Docker"
     
@@ -15,7 +13,6 @@ except AttributeError as e:
 import grpc
 import argparse
 import json
-ENV = "k8s"
 
 DEFAULT_CAPABILITIES = [
     "CAP_AUDIT_WRITE",

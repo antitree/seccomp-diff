@@ -194,7 +194,8 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
 
 if __name__ == '__main__':
     app.debug = True
-    if app.debug: 
+    if app.debug:
         app.config["PROPAGATE_EXCEPTIONS"] = True
-    app.config["MODE"] = "k8s"
+    # Default to containerd.ENV to avoid errors when containerd is unavailable
+    app.config["MODE"] = containerd.ENV
     app.run(host='0.0.0.0', port=5000, debug=True)
