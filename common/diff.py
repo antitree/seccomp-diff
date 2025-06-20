@@ -1,10 +1,5 @@
 import json
-from common.seccomp_json import (
-    get_seccomp_profile_json,
-    get_default_seccomp_json,
-    json_to_summary,
-)
-from common.seccompare import upload_if_missing
+from common.ptrace import get_seccomp_filters, get_default_seccomp
 from common.output import CustomTable as Table
 from lib.syscalls.x86_64 import syscall_dict as SYSCALLS
 from rich.console import Console
@@ -64,25 +59,30 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
     danger_style = Style(color="red", blink=True, bold=True)
     
     try:
-        profile1, full1, dis1 = get_seccomp_profile_json(container1["pid"])
+        full1, d1 = get_seccomp_filters(container1["pid"])
         if container2 == "default":
-            profile2, full2, dis2 = get_default_seccomp_json()
+            full2, d2 = get_default_seccomp()
             container2 = {
-                "pid": None,
+                "pid": None, 
                 "name": "RuntimeDefault",
-                "seccomp": "",
+                "seccomp": "", 
                 "caps": "",
-            }
+                }
+        else: 
+            full2, d2 = get_seccomp_filters(container2["pid"])
+
+        if d1:
+            container1["summary"] = d1.syscallSummary
         else:
-            profile2, full2, dis2 = get_seccomp_profile_json(container2["pid"])
+            container1["summary"] = {}
 
-        container1["summary"], default_action1 = json_to_summary(profile1)
-        container2["summary"], default_action2 = json_to_summary(profile2)
+        if d2:
+            container2["summary"] = d2.syscallSummary
+        else:
+            container2["summary"] = {}
 
-        json1 = json.dumps(profile1, indent=2)
-        json2 = json.dumps(profile2, indent=2)
-        container1["seccomp"] = json1
-        container2["seccomp"] = json2
+        default_action1 = d1.defaultAction if d1 else "unknown"
+        default_action2 = d2.defaultAction if d2 else "unknown"
 
         console = Console()
         table = Table(show_header=True, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)
@@ -92,9 +92,9 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         
         # Add Seccomp and Capabilities Information
         table.add_custom_row("[b]seccomp", container1["seccomp"], container2["seccomp"])
-        # Add total instructions row (based on original BPF)
-        container1["total"] = dis1.syscallSummary.get("total", {"count": 0}).get("count")
-        container2["total"] = dis2.syscallSummary.get("total", {"count": 0}).get("count")
+        # Add total instructions row
+        container1["total"] = container1["summary"].get("total", {"count": 0}).get("count")
+        container2["total"] = container2["summary"].get("total", {"count": 0}).get("count")
         table.add_custom_row("[b]total", str(container1["total"]), str(container2["total"]))
         
         
@@ -159,10 +159,6 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
     
     if len(table.rows) <= 3 and container1["total"] == container2["total"]:
         console.print(Text("No seccomp filter differences were found between the two containers", justify="center"))
-
-    # After rendering the table, sync profiles with seccompare.com
-    upload_if_missing(profile1, container1.get("image", ""))
-    upload_if_missing(profile2, container2.get("image", ""))
 
     return table, full1, full2
 
