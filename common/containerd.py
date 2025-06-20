@@ -1,3 +1,9 @@
+import os
+
+# Use the pure Python protobuf implementation to avoid descriptor errors when
+# containerd's generated stubs are built with an older protoc version.
+os.environ.setdefault("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python")
+
 try:
     from containerd.services.containers.v1 import containers_pb2, containers_pb2_grpc
     from containerd.services.namespaces.v1 import namespace_pb2, namespace_pb2_grpc  # For listing namespaces
