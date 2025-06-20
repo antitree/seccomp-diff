@@ -20,7 +20,10 @@ AGENT_ID = os.getenv("HOSTNAME", "agent")
 @app.route('/containers', methods=['GET'])
 def list_containers():
     """Return container details for this node."""
-    info = containerd.get_containers(containerd_socket=CONTAINERD_SOCKET, namespace=NAMESPACE)
+    try:
+        info = containerd.get_containers(containerd_socket=CONTAINERD_SOCKET, namespace=NAMESPACE)
+    except (FileNotFoundError, PermissionError, containerd.ContainerdConnectionError) as e:
+        return jsonify({"error": str(e)}), 500
     for item in info.values():
         item["agent"] = AGENT_ID
     return jsonify(info)

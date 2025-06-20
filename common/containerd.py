@@ -15,6 +15,11 @@ except AttributeError as e:
 import grpc
 import argparse
 import json
+import os
+
+class ContainerdConnectionError(Exception):
+    """Raised when the agent cannot connect to containerd."""
+    pass
 ENV = "k8s"
 
 DEFAULT_CAPABILITIES = [
@@ -95,19 +100,21 @@ def get_container_image(containerd_socket, container_id, namespace="k8s.io"):
 def get_containers(containerd_socket="/run/containerd/containerd.sock", namespace="k8s.io", with_seccomp=False):
     container_info = {}
 
-    # Connect to the containerd gRPC socket
+    if not os.path.exists(containerd_socket):
+        raise FileNotFoundError(f"containerd socket not found at {containerd_socket}")
+    if not os.access(containerd_socket, os.R_OK | os.W_OK):
+        raise PermissionError(f"permission denied accessing containerd socket at {containerd_socket}")
+
     channel = grpc.insecure_channel(f"unix://{containerd_socket}")
     client = containers_pb2_grpc.ContainersStub(channel)
 
     response = None
     try:
-        # Specify the namespace in the metadata
         metadata = (("containerd-namespace", namespace),)
         request = containers_pb2.ListContainersRequest()
         response = client.List(request, metadata=metadata)
     except grpc.RpcError as e:
-        print(f"Error accessing containerd: {e}")
-        return {}
+        raise ContainerdConnectionError(f"failed to communicate with containerd: {e}") from e
 
     if response is None:
         return {}
