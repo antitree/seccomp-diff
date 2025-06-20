@@ -1,7 +1,7 @@
 import json
 import pytest
 import docker
-from get_seccomp_syscall import get_seccomp_filters
+from common.ptrace import get_seccomp_filters
 
 # Sample JSON data for testing
 VALID_FILTERS = {
