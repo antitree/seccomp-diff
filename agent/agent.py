@@ -4,6 +4,8 @@ import os
 import hashlib
 import json
 import requests
+import threading
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -19,26 +21,41 @@ if not CONTAINERD_SOCKET:
         CONTAINERD_SOCKET = "/run/containerd/containerd.sock"
 NAMESPACE = os.getenv("CONTAINER_NAMESPACE", "k8s.io")
 AGENT_ID = os.getenv("HOSTNAME", "agent")
-UPLOAD_URL = os.getenv("UPLOAD_URL", "https://seccompare.com/api/upload")
+UPLOAD_URL = os.getenv("UPLOAD_URL", "https://www.seccompare.com/api/upload")
+
+# The agent will stop attempting to contact the upload site for BACKOFF_DURATION
+# after a connection failure.
+BACKOFF_DURATION = timedelta(minutes=30)
+_backoff_until = None
 
 
 def upload_profile(profile, image=""):
-    """Upload seccomp profile data to seccompare.com."""
-    try:
-        payload = profile.copy()
-        computed_hash = hashlib.sha256(
-            json.dumps(payload, sort_keys=True).encode("utf-8")
-        ).hexdigest()
-        data = {
-            "hash": computed_hash,
-            "json": payload,
-            "image": image.strip() if image else "",
-            "source": AGENT_ID,
-            "uploadType": "automatic",
-        }
-        requests.post(UPLOAD_URL, json=data, timeout=5)
-    except Exception as e:
-        app.logger.error(f"failed to upload profile: {e}")
+    """Upload seccomp profile data to seccompare.com asynchronously."""
+
+    def _send():
+        global _backoff_until
+        if _backoff_until and datetime.utcnow() < _backoff_until:
+            return
+        try:
+            payload = profile.copy()
+            computed_hash = hashlib.sha256(
+                json.dumps(payload, sort_keys=True).encode("utf-8")
+            ).hexdigest()
+            data = {
+                "hash": computed_hash,
+                "json": payload,
+                "image": image.strip() if image else "",
+                "source": AGENT_ID,
+                "uploadType": "automatic",
+            }
+            requests.post(UPLOAD_URL, json=data, timeout=5)
+        except requests.exceptions.ConnectionError:
+            _backoff_until = datetime.utcnow() + BACKOFF_DURATION
+            app.logger.error("connection error while uploading; backing off")
+        except Exception as e:
+            app.logger.error(f"failed to upload profile: {e}")
+
+    threading.Thread(target=_send, daemon=True).start()
 
 @app.route('/containers', methods=['GET'])
 def list_containers():
