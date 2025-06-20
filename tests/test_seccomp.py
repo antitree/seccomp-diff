@@ -1,7 +1,7 @@
 import json
 import pytest
 import docker
-from common.ptrace import get_seccomp_filters
+from common.ptrace import get_seccomp_profile
 
 # Sample JSON data for testing
 VALID_FILTERS = {
@@ -70,8 +70,8 @@ def docker_container(valid_filters_file):
 def test_valid_filters(docker_container, valid_filters_file):
     pid = docker_container.attrs['State']['Pid']
 
-    # Call the function to retrieve filters
-    filters, _ = get_seccomp_filters(pid=pid)
+    # Call the function to retrieve profile
+    profile = get_seccomp_profile(pid=pid)
 
     # Load expected filters from the JSON file
     with open(valid_filters_file, "r") as f:
@@ -79,7 +79,10 @@ def test_valid_filters(docker_container, valid_filters_file):
         syscall_names = [entry["syscall"] for entry in expected_filters]
 
     # Assert results match
-    assert filters == syscall_names
+    prof_names = []
+    for sc in profile.get("syscalls", []):
+        prof_names.extend(sc.get("names", []))
+    assert prof_names == syscall_names
 
 def test_invalid_syscall_handling(docker_container, valid_filters_file):
     # Mock an invalid seccomp file (manually modify it to include invalid syscall)
@@ -97,11 +100,13 @@ def test_invalid_syscall_handling(docker_container, valid_filters_file):
 
     pid = docker_container.attrs['State']['Pid']
 
-    # Call the function to retrieve filters
-    filters, _ = get_seccomp_filters(pid=pid)
+    profile = get_seccomp_profile(pid=pid)
 
     # Assert "invalid_syscall" is in the results (mocked scenario)
-    assert "invalid_syscall" in filters
+    names = []
+    for sc in profile.get("syscalls", []):
+        names.extend(sc.get("names", []))
+    assert "invalid_syscall" in names
 
 def test_empty_filters(docker_container, valid_filters_file):
     # Mock an empty seccomp file
@@ -115,8 +120,7 @@ def test_empty_filters(docker_container, valid_filters_file):
 
     pid = docker_container.attrs['State']['Pid']
 
-    # Call the function to retrieve filters
-    filters, _ = get_seccomp_filters(pid=pid)
+    profile = get_seccomp_profile(pid=pid)
 
     # Assert filters list is empty
-    assert filters == []
+    assert profile.get("syscalls", []) == []

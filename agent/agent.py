@@ -30,16 +30,10 @@ def list_containers():
 
 @app.route('/seccomp/<int:pid>', methods=['GET'])
 def seccomp(pid):
-    """Return seccomp details for a given PID."""
-    filters, dis = ptrace.get_seccomp_filters(pid)
-    summary = dis.syscallSummary if dis else {}
-    default_action = dis.defaultAction if dis else None
-    return jsonify({
-        "pid": pid,
-        "filters": filters,
-        "summary": summary,
-        "defaultAction": default_action,
-    })
+    """Return seccomp profile for a given PID in Docker JSON format."""
+    profile = ptrace.get_seccomp_profile(pid)
+    profile["pid"] = pid
+    return jsonify(profile)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

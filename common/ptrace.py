@@ -36,12 +36,12 @@ def ptrace(request, pid, addr, data):
     return result
 
 def get_default_seccomp():
+    """Return the runtime default seccomp profile in Docker JSON format."""
     no_instructions = len(RUNTIMEDEFAULT)
     disassembler = BPFDisassembler()
-    disassembled_filters = disassembler.disassemble(RUNTIMEDEFAULT)
-    # Generate a syscall summary
+    disassembler.disassemble(RUNTIMEDEFAULT)
     disassembler.syscallSummary["total"] = {"count": no_instructions}
-    return disassembled_filters, disassembler
+    return disassembler_to_profile(disassembler)
 
     
 def get_seccomp_filters(pid):
@@ -156,3 +156,46 @@ def list_seccomp_pids():
                                 table.add_row(f"{cmd}({pid})",no_instructions)
                             break
     return table
+
+
+def disassembler_to_profile(dis):
+    """Convert a BPFDisassembler result to Docker-style seccomp profile."""
+    profile = {
+        "architectures": ["SCMP_ARCH_X86_64"],
+        "defaultAction": "SCMP_ACT_ALLOW",
+        "syscalls": [],
+    }
+
+    if not dis:
+        return profile
+
+    action = dis.defaultAction
+    if action:
+        if action.startswith("ERRNO"):
+            errno_val = 1
+            try:
+                errno_val = int(action.split("(")[1].split(")")[0])
+            except Exception:
+                pass
+            profile["defaultAction"] = "SCMP_ACT_ERRNO"
+            profile["defaultErrnoRet"] = errno_val
+        else:
+            profile["defaultAction"] = f"SCMP_ACT_{action}"
+
+    for name, info in dis.syscallSummary.items():
+        if name == "total":
+            continue
+        act = info.get("action", "ALLOW")
+        if "/" in act:
+            act = act.split("/")[0]
+        profile["syscalls"].append({
+            "names": [name],
+            "action": f"SCMP_ACT_{act}",
+        })
+    return profile
+
+
+def get_seccomp_profile(pid):
+    """Return the seccomp profile for the given PID in Docker JSON format."""
+    _, dis = get_seccomp_filters(pid)
+    return disassembler_to_profile(dis)
