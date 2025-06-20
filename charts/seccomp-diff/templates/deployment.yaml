@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: seccomp-diff
-  namespace: {{ .Values.namespace }}  # Dynamically set the namespace
+  namespace: {{ .Values.namespace | default "seccomp-diff" }}  # Dynamically set the namespace
   labels:
     app: seccomp-diff
 spec:
@@ -40,6 +40,6 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
         - name: AGENT_ENDPOINTS
-          value: "http://seccomp-diff-agent.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.agent.port }}"
+          value: "http://seccomp-diff-agent.{{ .Values.namespace | default "seccomp-diff" }}.svc.cluster.local:{{ .Values.agent.port }}"
         command: ["flask"]
         args: ["run", "--debug"]

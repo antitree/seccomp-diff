@@ -4,7 +4,7 @@ apiVersion: security-profiles-operator.x-k8s.io/v1beta1
 kind: SeccompProfile
 metadata:
   name: profile-block-all
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace | default "seccomp-diff" }}
   annotations:
     description: "Blocks all syscalls."
 spec:
@@ -14,7 +14,7 @@ apiVersion: security-profiles-operator.x-k8s.io/v1beta1
 kind: SeccompProfile
 metadata:
   name: profile-complain-unsafe
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace | default "seccomp-diff" }}
   annotations:
     description: "UNSAFE: Allows all syscalls while logging their use. Similar to running as unconfined in terms of enforcement."
 spec:
@@ -24,7 +24,7 @@ apiVersion: security-profiles-operator.x-k8s.io/v1beta1
 kind: SeccompProfile
 metadata:
   name: profile-allow-unsafe
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace | default "seccomp-diff" }}
   annotations:
     description: "UNSAFE: Allows all syscalls. Similar to running as unconfined as it provides no enforcement."
 spec:
@@ -34,7 +34,7 @@ apiVersion: security-profiles-operator.x-k8s.io/v1beta1
 kind: SeccompProfile
 metadata:
   name: profile-complain-block-high-risk
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace | default "seccomp-diff" }}
   annotations:
     description: "Enables complain mode whilst blocking high-risk syscalls. Some essential syscalls are allowed to decrease log noise."
 spec:
@@ -106,7 +106,7 @@ apiVersion: security-profiles-operator.x-k8s.io/v1beta1
 kind: SeccompProfile
 metadata:
   name: profile-runc-default
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace | default "seccomp-diff" }}
 spec:
   defaultAction: SCMP_ACT_ERRNO
   architectures:
@@ -199,7 +199,7 @@ apiVersion: security-profiles-operator.x-k8s.io/v1beta1
 kind: SeccompProfile
 metadata:
   name: profile-happy-seccompdiff
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace | default "seccomp-diff" }}
   annotations:
     description: "Custom build seccomp profile for hello-shmoo container."
 spec:

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: seccomp-diff-agent
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace | default "seccomp-diff" }}
   labels:
     app: seccomp-diff-agent
 spec:
