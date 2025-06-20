@@ -33,10 +33,7 @@ spec:
           mountPath: /host/proc
           readOnly: true
         - name: containerd-socket
-          mountPath: {{ .Values.agent.containerdSocket }}
-        env:
-        - name: CONTAINERD_SOCKET
-          value: {{ .Values.agent.containerdSocket | quote }}
+          mountPath: /run/containerd/containerd.sock
       volumes:
       - name: host-proc
         hostPath:
