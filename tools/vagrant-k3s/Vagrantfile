@@ -39,6 +39,8 @@ EOF
           curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode=644
           sudo cp /etc/rancher/k3s/k3s.yaml /vagrant/kubeconfig
           sudo sed -i 's/127.0.0.1/192.168.56.10/' /vagrant/kubeconfig
+          sudo sed -i '/certificate-authority-data/d' /vagrant/kubeconfig
+          sudo sed -i "/server: https:\/\/192.168.56.10:6443/a\    insecure-skip-tls-verify: true" /vagrant/kubeconfig
           sudo cat /var/lib/rancher/k3s/server/node-token > /vagrant/token
           kubectl apply -f /vagrant/registry.yaml
         SHELL
