@@ -19,7 +19,10 @@ spec:
       - name: agent
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["python", "agent/agent.py"]
+        command: ["python", "-m", "agent.agent"]
+        ports:
+        - name: http
+          containerPort: 8000
         securityContext:
           privileged: true
           capabilities:

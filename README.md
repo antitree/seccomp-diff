@@ -123,13 +123,10 @@ privileges because all low level operations are handled by the agents.
 
 Example k8s deployment
 ```yaml
-Example k8s deployment:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: seccomp-diff
-  labels:
-    app: seccomp-diff
 spec:
   replicas: 1
   selector:
@@ -140,38 +137,14 @@ spec:
       labels:
         app: seccomp-diff
     spec:
-      hostPID: true
       containers:
       - name: seccomp-diff
         image: antitree/seccomp-diff:latest
-        securityContext:
-          privileged: true  
-          capabilities:
-            add:
-            - SYS_PTRACE  
-        volumeMounts:
-        - name: host-proc
-          mountPath: /host/proc
-          readOnly: true
-        - name: docker-socket
-          mountPath: /var/run/docker.sock  # OPTIONAL for Docker
-        - name: containerd-socket
-          mountPath: /var/run/containerd/containerd.sock  
         env:
-        - name: PROC_PATH
-          value: "/host/proc"
+        - name: AGENT_ENDPOINTS
+          value: "http://seccomp-diff-agent.seccomp-diff.svc.cluster.local:8000"
         command: ["flask"]
         args: ["run", "--debug"]
-      volumes:
-      - name: host-proc
-        hostPath:
-          path: /proc
-      - name: docker-socket
-        hostPath:
-          path: /var/run/docker.sock  # Host path for Docker socket
-      - name: containerd-socket
-        hostPath:
-          path: /var/run/containerd/containerd.sock  # Host path for Docker socket
 ```
 ---
 
