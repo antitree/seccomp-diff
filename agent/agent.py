@@ -4,8 +4,16 @@ import os
 
 app = Flask(__name__)
 
-# Namespace and socket path can be configured via env vars
-CONTAINERD_SOCKET = os.getenv("CONTAINERD_SOCKET", "/run/containerd/containerd.sock")
+# Namespace and socket path can be configured via env vars. If the socket
+# isn't provided, attempt to guess common paths used by containerd and k3s.
+CONTAINERD_SOCKET = os.getenv("CONTAINERD_SOCKET")
+if not CONTAINERD_SOCKET:
+    for guess in ("/run/containerd/containerd.sock", "/run/k3s/containerd/containerd.sock"):
+        if os.path.exists(guess):
+            CONTAINERD_SOCKET = guess
+            break
+    else:
+        CONTAINERD_SOCKET = "/run/containerd/containerd.sock"
 NAMESPACE = os.getenv("CONTAINER_NAMESPACE", "k8s.io")
 AGENT_ID = os.getenv("HOSTNAME", "agent")
 

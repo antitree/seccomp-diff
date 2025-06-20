@@ -88,13 +88,14 @@ sudo python web.py
 
 Example Docker run:
 ```bash
-docker run --rm -it \                                                                                                     
+docker run --rm -it \
   --pid=host --privileged \                            
   --cap-add=SYS_PTRACE \                                             
-  --security-opt seccomp=unconfined -v /var/run/docker.sock:/var/run/docker.sock \  
+  --security-opt seccomp=unconfined -v /var/run/docker.sock:/var/run/docker.sock \
   -v /proc:/host/proc:ro -v /run/containerd/containerd.sock:/run/containerd/containerd.sock \
   antitree/seccomp-diff
 ```
+If running on k3s, mount `/run/k3s/containerd/containerd.sock` instead of `/run/containerd/containerd.sock`.
 
 
 Example helm chart:
@@ -108,6 +109,11 @@ environment variable on the web deployment to a comma-separated list of agent
 service URLs (for example `http://seccomp-diff-agent.seccomp-diff.svc.cluster.local:8000`).
 The web interface will query each agent for container details and seccomp
 summaries.
+
+If your environment uses a non-standard location for the containerd socket
+(for example `/run/k3s/containerd/containerd.sock` on k3s), update the Helm
+value `agent.containerdSocket` accordingly.  The agent will also try to guess
+between the common containerd and k3s paths when no value is provided.
 
 ### New DaemonSet Architecture
 
