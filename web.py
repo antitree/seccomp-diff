@@ -201,15 +201,12 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
                         resp = requests.get(f"{c['agent_url']}/seccomp/{c['pid']}")
                         resp.raise_for_status()
                         data = resp.json()
-                        c["summary"] = data.get("summary", {})
-                        c["filters"] = data.get("filters", [])
-                        if "defaultAction" in data:
-                            c["defaultAction"] = data["defaultAction"]
+                        c["profile"] = data
                     except Exception as e:
                         app.logger.error(f"error fetching seccomp from {c['agent_url']}: {e}")
 
         # Generate the table using compare_seccomp_policies
-        table,full1,full2 = compare_seccomp_policies(
+        table = compare_seccomp_policies(
             container1, container2,
             reduce=reduce,
             only_diff=only_diff,
@@ -219,7 +216,7 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
         
         
         # Convert the table to JSON
-        table_json = table_to_json(table, full1, full2)
+        table_json = table_to_json(table)
         return jsonify({"output": table_json})
     except ValueError as e:
         return jsonify({"diff error": str(e)}), 500

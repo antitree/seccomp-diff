@@ -81,7 +81,7 @@ def main():
             raise ValueError("Cannot compare a container to itself")
 
         # Compare seccomp policies
-        table, _, _ = compare_seccomp_policies(containers[container1], containers[container2])
+        table = compare_seccomp_policies(containers[container1], containers[container2])
         
         
         console.options.max_height = 5
