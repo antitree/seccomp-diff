@@ -1,0 +1,66 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+
+  nodes = {
+    "master" => "192.168.56.10",
+    "worker1" => "192.168.56.11",
+    "worker2" => "192.168.56.12"
+  }
+
+  nodes.each do |name, ip|
+    config.vm.define name do |node|
+      node.vm.hostname = name
+      node.vm.network "private_network", ip: ip
+      if name == "master"
+        node.vm.network "forwarded_port", guest: 6443, host: 6443
+        node.vm.network "forwarded_port", guest: 30080, host: 5000
+        node.vm.network "forwarded_port", guest: 32000, host: 32000
+      end
+      node.vm.provider :virtualbox do |vb|
+        vb.memory = 2048
+        vb.cpus = 2
+      end
+
+      if name == "master"
+        node.vm.provision "shell", inline: <<-SHELL
+          sudo mkdir -p /etc/rancher/k3s
+          cat <<'EOF' | sudo tee /etc/rancher/k3s/registries.yaml
+mirrors:
+  "docker.io":
+    endpoint:
+      - "http://192.168.56.10:32000"
+      - "https://registry-1.docker.io"
+configs:
+  "192.168.56.10:32000":
+    tls:
+      insecure_skip_verify: true
+EOF
+          curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode=644
+          sudo cp /etc/rancher/k3s/k3s.yaml /vagrant/kubeconfig
+          sudo sed -i 's/127.0.0.1/192.168.56.10/' /vagrant/kubeconfig
+          sudo cat /var/lib/rancher/k3s/server/node-token > /vagrant/token
+          kubectl apply -f /vagrant/registry.yaml
+        SHELL
+      else
+        node.vm.provision "shell", inline: <<-SHELL
+          sudo mkdir -p /etc/rancher/k3s
+          cat <<'EOF' | sudo tee /etc/rancher/k3s/registries.yaml
+mirrors:
+  "docker.io":
+    endpoint:
+      - "http://192.168.56.10:32000"
+      - "https://registry-1.docker.io"
+configs:
+  "192.168.56.10:32000":
+    tls:
+      insecure_skip_verify: true
+EOF
+          until [ -f /vagrant/token ]; do sleep 2; done
+          TOKEN=$(cat /vagrant/token)
+          curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.10:6443 K3S_TOKEN=$TOKEN sh -
+        SHELL
+      end
+    end
+  end
+end
