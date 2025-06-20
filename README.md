@@ -103,6 +103,24 @@ helm install seccomp-diff charts/seccomp-diff
 kubectl port-forward service/seccomp-diff 5000:5000
 ```
 
+When running inside Kubernetes with the agent DaemonSet, set the `AGENT_ENDPOINTS`
+environment variable on the web deployment to a comma-separated list of agent
+service URLs (for example `http://seccomp-diff-agent.seccomp-diff.svc.cluster.local:8000`).
+The web interface will query each agent for container details and seccomp
+summaries.
+
+### New DaemonSet Architecture
+
+`seccomp-diff` can now be deployed in two parts: a lightweight web interface and
+an agent that runs as a DaemonSet on every node.  The agent collects container
+information, communicates with containerd and extracts seccomp bytecode.  The
+web service queries each agent over HTTP and aggregates the results so a single
+instance can display seccomp information for the whole cluster.
+
+To deploy the agent use the provided `agent-daemonset.yaml` and
+`agent-service.yaml` templates.  The web deployment no longer requires host
+privileges because all low level operations are handled by the agents.
+
 Example k8s deployment
 ```yaml
 Example k8s deployment:
@@ -159,7 +177,8 @@ spec:
 
 ## Current Limitations
 * [ ] Only visually diffs x86_64 for now
-* [ ] For k8s, can only dump the Node's containers that it's installed on. It needs to be ported to a Daemonset to get the whole cluster
+* [ ] For k8s, data is gathered by a node agent DaemonSet. Additional features
+      like RBAC hardening are still in progress
 
 
 ## Related work

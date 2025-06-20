@@ -59,17 +59,23 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
     danger_style = Style(color="red", blink=True, bold=True)
     
     try:
-        full1, d1 = get_seccomp_filters(container1["pid"])
+        if "summary" in container1:
+            full1, d1 = [], None
+        else:
+            full1, d1 = get_seccomp_filters(container1["pid"])
         if container2 == "default":
             full2, d2 = get_default_seccomp()
             container2 = {
-                "pid": None, 
+                "pid": None,
                 "name": "RuntimeDefault",
-                "seccomp": "", 
+                "seccomp": "",
                 "caps": "",
                 }
-        else: 
-            full2, d2 = get_seccomp_filters(container2["pid"])
+        else:
+            if "summary" in container2:
+                full2, d2 = [], None
+            else:
+                full2, d2 = get_seccomp_filters(container2["pid"])
 
         if d1:
             container1["summary"] = d1.syscallSummary
