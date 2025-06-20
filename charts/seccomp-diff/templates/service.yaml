@@ -4,6 +4,7 @@ metadata:
     name: seccomp-diff
     labels:
         app: seccomp-diff
+
 spec:
     type: {{ .Values.service.type }}
     ports:
@@ -11,5 +12,8 @@ spec:
         targetPort: 5000
         protocol: TCP
         name: http
+        {{- if eq .Values.service.type "NodePort" }}
+        nodePort: {{ .Values.service.nodePort }}
+        {{- end }}
     selector:
         app: seccomp-diff
