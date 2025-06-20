@@ -30,7 +30,13 @@ def seccomp(pid):
     """Return seccomp details for a given PID."""
     filters, dis = ptrace.get_seccomp_filters(pid)
     summary = dis.syscallSummary if dis else {}
-    return jsonify({"pid": pid, "filters": filters, "summary": summary})
+    default_action = dis.defaultAction if dis else None
+    return jsonify({
+        "pid": pid,
+        "filters": filters,
+        "summary": summary,
+        "defaultAction": default_action,
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

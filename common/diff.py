@@ -89,8 +89,12 @@ def compare_seccomp_policies(container1, container2, reduce=True, only_diff=True
         else:
             container2.setdefault("summary", {})
 
-        default_action1 = d1.defaultAction if d1 else "unknown"
-        default_action2 = d2.defaultAction if d2 else "unknown"
+        default_action1 = (
+            d1.defaultAction if d1 else container1.get("defaultAction", "unknown")
+        )
+        default_action2 = (
+            d2.defaultAction if d2 else container2.get("defaultAction", "unknown")
+        )
 
         console = Console()
         table = Table(show_header=True, show_lines=True, box=box.HEAVY_EDGE, style="green", pad_edge=False)

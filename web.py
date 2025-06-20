@@ -203,6 +203,8 @@ def run_seccomp_diff(reduce=True, only_diff=True, only_dangerous=False):
                         data = resp.json()
                         c["summary"] = data.get("summary", {})
                         c["filters"] = data.get("filters", [])
+                        if "defaultAction" in data:
+                            c["defaultAction"] = data["defaultAction"]
                     except Exception as e:
                         app.logger.error(f"error fetching seccomp from {c['agent_url']}: {e}")
 
