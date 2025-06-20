@@ -61,6 +61,13 @@ def get_seccomp_filters(pid):
     # Retrieve the seccomp filter length
     sock_fprog = SockFprog()
     no_instructions = ptrace(PTRACE_SECCOMP_GET_FILTER, pid, 0, None)
+    if no_instructions == -1:
+        print(
+            "ERROR: Unable to retrieve seccomp profile. "
+            "CONFIG_CHECKPOINT_RESTORE is likely not enabled in this kernel."
+        )
+        b = BPFDisassembler()
+        return b.disassemble(""), b
     if no_instructions <= 0:
         print(f"WARNING: No seccomp profile found for {pid}")
         b = BPFDisassembler()
