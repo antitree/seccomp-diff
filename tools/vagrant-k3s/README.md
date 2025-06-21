@@ -17,7 +17,14 @@ curl http://localhost:5000
 
 The API server listens on the master's private IP `192.168.56.10`. The kubeconfig
 file is patched by the provisioning script so it can be used directly from the
-host machine. The `seccomp-diff` service is exposed on `localhost:5000`.
+host machine. If you need to re-extract the configuration run:
+
+```bash
+./extract_kubeconfig.sh
+```
+
+This script copies the kubeconfig from the master and adds `insecure-skip-tls-verify: true`
+so TLS certificate validation is skipped. The `seccomp-diff` service is exposed on `localhost:5000`.
 
 ### Loading local images
 
