@@ -124,6 +124,12 @@ h1, h2, h3 {
     color: var(--selected-text) !important;
 }
 
+.disabled-container {
+    background-color: #d3d3d3 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+}
+
 .header {
     background-color: var(--header-background);
     color: var(--header-color);

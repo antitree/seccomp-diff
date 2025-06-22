@@ -83,12 +83,20 @@ function renderContainers(containers) {
             const button = document.createElement('button');
             const tooltip = document.createElement('span');
             bdiv.className = "tooltip-container";
-            
+
             tooltip.innerText = `${containerText}`;
             tooltip.className = "tooltip-text";
             button.textContent = `${container.name} (PID: ${container.pid})`;
-            button.className = "btn btn-outline-primary ";
-            button.onclick = () => toggleSelection(container, button);
+            button.dataset.pid = container.pid;
+
+            if (container.pid === null || container.pid === undefined) {
+                button.className = "btn btn-outline-secondary disabled-container";
+                button.disabled = true;
+            } else {
+                button.className = "btn btn-outline-primary ";
+                button.onclick = () => toggleSelection(container, button);
+            }
+
             bdiv.appendChild(button);
             bdiv.appendChild(tooltip);
             containerDiv.appendChild(bdiv);
@@ -125,11 +133,22 @@ function filterByNamespace() {
 }
 
 function toggleSelection(container, button) {
+    if (container.pid === null || container.pid === undefined) {
+        return;
+    }
+
     const exists = selectedContainers.find(c => c.pid === container.pid);
     if (exists) {
         selectedContainers = selectedContainers.filter(c => c.pid !== container.pid);
         button.classList.remove('selected');
-    } else if (selectedContainers.length < 2) {
+    } else {
+        if (selectedContainers.length >= 2) {
+            const removed = selectedContainers.shift();
+            const oldButton = document.querySelector(`button[data-pid='${removed.pid}']`);
+            if (oldButton) {
+                oldButton.classList.remove('selected');
+            }
+        }
         selectedContainers.push(container);
         button.classList.add('selected');
     }
