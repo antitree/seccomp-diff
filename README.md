@@ -19,7 +19,7 @@ truth for the filters applied to a process.
 
 CLI tool that will diff two given containers' given seccomp profiles.
 
-![](/examples/demo.gif)
+![](/examples/demo4.gif)
 
 ### Usage:
 ```
@@ -156,8 +156,6 @@ spec:
 
 ## Current Limitations
 * [ ] Only visually diffs x86_64 for now
-* [ ] For k8s, data is gathered by a node agent DaemonSet. Additional features
-      like RBAC hardening are still in progress
 
 
 ## Related work
