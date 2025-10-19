@@ -5,6 +5,9 @@ on:
     types: [opened, synchronize, reopened]
     branches: [ "**" ]  # All branches
 
+permissions:
+  contents: read
+
 jobs:
   semgrep:
     runs-on: ubuntu-latest
@@ -13,10 +16,15 @@ jobs:
       pull-requests: write  # Needed for PR comments
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
+        uses: returntocorp/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
         with:
           config: auto  # or use p/ci or a custom ruleset
