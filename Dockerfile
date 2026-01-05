@@ -1,5 +1,5 @@
 # Use an official lightweight Python base image
-FROM python:3.14-slim@sha256:5cfac249393fa6c7ebacaf0027a1e127026745e603908b226baa784c52b9d99b as base
+FROM python:3.14-slim@sha256:3955a7dd66ccf92b68d0232f7f86d892eaf75255511dc7e98961bdc990dc6c9b as base
 
 # Set working directory
 WORKDIR /app
