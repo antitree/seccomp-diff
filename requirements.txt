@@ -12,7 +12,7 @@ Markdown==3.10
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 mdurl==0.1.2
-Pygments==2.18.0
+Pygments==2.19.2
 requests==2.32.4
 rich==13.9.4
 termcolor==3.2.0
