@@ -1,5 +1,5 @@
 # Use an official lightweight Python base image
-FROM python:3.14-slim@sha256:3955a7dd66ccf92b68d0232f7f86d892eaf75255511dc7e98961bdc990dc6c9b as base
+FROM python:3.12-slim AS base
 
 # Set working directory
 WORKDIR /app
@@ -30,7 +30,7 @@ COPY ./*.py /app/
 ENV FLASK_APP=web.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_DEBUG=0
-ENV PYTHONPATH=/app:$PYTHONPATH
+ENV PYTHONPATH=/app
 
 # Expose Flask's port
 EXPOSE 5000
