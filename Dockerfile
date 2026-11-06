@@ -1,5 +1,5 @@
 # Use an official lightweight Python base image
-FROM python:3.14-slim@sha256:3955a7dd66ccf92b68d0232f7f86d892eaf75255511dc7e98961bdc990dc6c9b as base
+FROM python:3.12-slim@sha256:4840d514c583a4d3d8cad3940e68dee6f0f6f3635c12fcd0a3d74c21a5b93a54 AS base
 
 # Set working directory
 WORKDIR /app
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libseccomp-dev \
     vim \
-    containerd \ 
+    containerd \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for caching
@@ -29,8 +29,8 @@ COPY ./*.py /app/
 # Set Flask environment variables
 ENV FLASK_APP=web.py
 ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_ENV=development
-ENV PYTHONPATH=/app:$PYTHONPATH
+ENV FLASK_DEBUG=0
+ENV PYTHONPATH=/app
 
 # Expose Flask's port
 EXPOSE 5000
@@ -39,4 +39,4 @@ EXPOSE 5000
 RUN apt-get purge -y gcc && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # Command to run the Flask app
-CMD ["flask", "run", "--debug"]
+CMD ["flask", "run"]
