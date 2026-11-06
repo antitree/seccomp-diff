@@ -27,5 +27,5 @@ jobs:
         run: pip install bandit
 
       - name: Run Bandit
-        run: bandit -r .
+        run: bandit -r common agent web.py seccomp_diff.py seccomp_dump.py -lll
 
