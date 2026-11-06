@@ -29,7 +29,7 @@ COPY ./*.py /app/
 # Set Flask environment variables
 ENV FLASK_APP=web.py
 ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_ENV=development
+ENV FLASK_DEBUG=0
 ENV PYTHONPATH=/app:$PYTHONPATH
 
 # Expose Flask's port
@@ -39,4 +39,4 @@ EXPOSE 5000
 RUN apt-get purge -y gcc && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # Command to run the Flask app
-CMD ["flask", "run", "--debug"]
+CMD ["flask", "run"]
