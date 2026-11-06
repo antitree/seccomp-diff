@@ -1,0 +1,29 @@
+name: Python smoke tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install 'pytest>=8,<10' 'rich>=13,<15'
+      - name: Check Python syntax
+        run: python -m compileall -q common agent tests seccomp_diff.py seccomp_dump.py web.py
+      - name: Run hermetic unit tests
+        run: python -m pytest -q tests/test_output_unit.py
